@@ -1,5 +1,7 @@
 # Smoothie-GO
-Why? for the lols.
+Why? for the lols. (Rewrite, of a rewrite, of a rewrite, of a rewrite)
+
+The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
 
 ![doing this](assets/doingthis.png)
 
