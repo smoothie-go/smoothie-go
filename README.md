@@ -1,11 +1,30 @@
 # Smoothie-GO
 Why? for the lols.
 
+![doing this](assets/doingthis.png)
+
 ## Checklist
+
+### Internal
+
+- [ ] **config**
+  - [ ] Parsing INI
+  - [x] Getting configs
+  - [x] Presistent configs (Pretty much just, delete the file, it reappears on the next run)
+
+- [ ] **Interpolation**
+  - [ ] SVP
+  - [ ] RIFE
+  - [ ] Nvidia Optical Flow (Will be limited to linux users, unless you buy SVPFlow unfortunately)
+
+- [ ] **Args**
+  - [x] Parsing args
+  - [ ] Validating args
 
 ### Recipe
 - [ ] **interpolation**
   - [ ] interpolation::enabled
+  - [ ] interpolation::type (SVP/OF)
   - [ ] interpolation::masking
   - [ ] interpolation::fps
   - [ ] interpolation::speed
@@ -86,4 +105,28 @@ Why? for the lols.
   - [ ] pre_interp::masking
   - [ ] pre_interp::factor
   - [ ] pre_interp::model
+
+## Priorities
+
+* Portablity & stability over speed - I don't want it to be the fastest possible, I want it to work on most platforms and be as stable as possible, while being fast enough.
+
+## Features that WONT be implemented (by me)
+
+If you want any features from here, **implement it and PR**, you will most likely be accepted.
+
+GUI, purely CLI for now.
+
+`last_args.txt`, never saw the use in that.
+
+`--rerun, -!!`, depends on last_args, just hit the up arrow, or use shell history
+
+`--json`
+
+`--tui`, GUI file picker
+
+Frameserver, just pre-render bro
+
+
+## Thanks
+[couleur-tweak-tips/smoothie-rs](https://github.com/couleur-tweak-tips/smoothie-rs) - For the og implementation
 

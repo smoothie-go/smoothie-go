@@ -1,6 +1,12 @@
 package main
 
 import (
-	"github.com/Hzqkii/smoothie-go/cmd"
-	"github.com/Hzqkii/smoothie-go/recipe"
+	"fmt"
+	"github.com/Hzqkii/smoothie-go/cli"
 )
+
+func main() {
+	args := cli.SetupArgs()
+
+	fmt.Println(args)
+}
