@@ -69,23 +69,25 @@ func GetRecipePathCustom(name string) string {
 func GetRecipePath() string {
 	recipePath := GetRecipePathCustom("recipe.ini")
 	if _, err := os.Stat(recipePath); os.IsNotExist(err) {
-		if _, err := os.Stat(GetRecipeSmrs()); err == nil {
-			fmt.Printf("Would you like to migrate your recipe? (y/n) ")
-			var input string
-			fmt.Scanln(&input)
-			if input == "y" {
-				fmt.Println("Migrating recipe...")
-				rcPath := GetRecipeSmrs()
-				rc, err := migrate.Migrate(rcPath)
-				if err != nil {
-					log.Fatal(err)
+		smrsRecipe, err := GetRecipeSmrs()
+		if err == nil {
+			if _, err := os.Stat(smrsRecipe); err == nil {
+				fmt.Printf("Would you like to migrate your recipe? (y/n) ")
+				var input string
+				fmt.Scanln(&input)
+				if input == "y" {
+					fmt.Println("Migrating recipe...")
+					rcPath := smrsRecipe
+					rc, err := migrate.Migrate(rcPath)
+					if err != nil {
+						log.Fatal(err)
+					}
+					dropFileAtPath(recipePath, []byte(rc))
+					return recipePath
+				} else {
+					fmt.Println("Skipping migration...")
 				}
-				dropFileAtPath(recipePath, []byte(rc))
-				return recipePath
-			} else {
-				fmt.Println("Skipping migration...")
 			}
-
 		}
 		dropFileAtPath(recipePath, []byte(recipe_ini))
 	}
@@ -104,21 +106,24 @@ func GetDefaultRecipePath() string {
 func GetEncodingPresetsPath() string {
 	encodingPresetsPath := filepath.Join(GetConfigDirectory(), "encoding_presets.ini")
 	if _, err := os.Stat(encodingPresetsPath); os.IsNotExist(err) {
-		if _, err := os.Stat(GetEncodingPresetsSmrs()); err == nil {
-			fmt.Printf("Would you like to migrate your encoding presets? (y/n) ")
-			var input string
-			fmt.Scanln(&input)
-			if input == "y" {
-				fmt.Println("Migrating encoding presets...")
-				epPath := GetEncodingPresetsSmrs()
-				ep, err := migrate.Migrate(epPath)
-				if err != nil {
-					log.Fatal(err)
+		smrsEncPresets, err := GetEncodingPresetsSmrs()
+		if err == nil {
+			if _, err := os.Stat(smrsEncPresets); err == nil {
+				fmt.Printf("Would you like to migrate your encoding presets? (y/n) ")
+				var input string
+				fmt.Scanln(&input)
+				if input == "y" {
+					fmt.Println("Migrating encoding presets...")
+					epPath := smrsEncPresets
+					ep, err := migrate.Migrate(epPath)
+					if err != nil {
+						log.Fatal(err)
+					}
+					dropFileAtPath(encodingPresetsPath, []byte(ep))
+					return encodingPresetsPath
+				} else {
+					fmt.Println("Skipping migration...")
 				}
-				dropFileAtPath(encodingPresetsPath, []byte(ep))
-				return encodingPresetsPath
-			} else {
-				fmt.Println("Skipping migration...")
 			}
 		}
 		dropFileAtPath(encodingPresetsPath, []byte(encoding_resets_ini))

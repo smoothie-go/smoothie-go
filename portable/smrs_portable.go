@@ -1,6 +1,7 @@
 package portable
 
 import (
+	"errors"
 	"log"
 	"os"
 	"os/exec"
@@ -62,16 +63,23 @@ func getConfigDirectorySmrs() string {
 	return filepath.Join(confDir, "smoothie-rs")
 }
 
-func GetRecipeSmrs() string {
-	if isPortableSmrs() {
-		return filepath.Join(getTargetSmrs(), "recipe.ini")
+func GetRecipeSmrs() (string, error) {
+	if findUsingPathSmrs() == "" {
+		return "", errors.New("smoothie-rs not found")
 	}
-	return filepath.Join(getConfigDirectorySmrs(), "recipe.ini")
+	if isPortableSmrs() {
+		return filepath.Join(getTargetSmrs(), "recipe.ini"), nil
+	}
+	return filepath.Join(getConfigDirectorySmrs(), "recipe.ini"), nil
 }
 
-func GetEncodingPresetsSmrs() string {
-	if isPortableSmrs() {
-		return filepath.Join(getTargetSmrs(), "encoding_presets.ini")
+func GetEncodingPresetsSmrs() (string, error) {
+	if findUsingPathSmrs() == "" {
+		return "", errors.New("smoothie-rs not found")
 	}
-	return filepath.Join(getConfigDirectorySmrs(), "encoding_presets.ini")
+
+	if isPortableSmrs() {
+		return filepath.Join(getTargetSmrs(), "encoding_presets.ini"), nil
+	}
+	return filepath.Join(getConfigDirectorySmrs(), "encoding_presets.ini"), nil
 }
