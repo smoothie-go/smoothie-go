@@ -1,4 +1,4 @@
-package recipe
+package migrate
 
 import (
 	"bufio"
@@ -15,13 +15,13 @@ func Migrate(inputFilePath string) (string, error) {
 	}
 	defer file.Close()
 
-	sectionRegex := regexp.MustCompile(`^\[(.+)]$`)
-	keyValueRegex := regexp.MustCompile(`^([^:=\s]+)\s*[:=]\s*(.*)$`)
+	sectionRegex := regexp.MustCompile(`^\[(.+)\]$`)
+	keyValueRegex := regexp.MustCompile(`^([^:=\s][^:=]*?)\s*[:=]\s*(.*)$`) // GPT'd regex
 
 	var output strings.Builder
 	currentSection := ""
-
 	scanner := bufio.NewScanner(file)
+
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 
@@ -37,9 +37,10 @@ func Migrate(inputFilePath string) (string, error) {
 		}
 
 		if matches := keyValueRegex.FindStringSubmatch(line); matches != nil {
-			key := matches[1]
-			value := matches[2]
-			output.WriteString(key + " = " + value + "\n")
+			key := strings.TrimSpace(matches[1])
+			value := strings.TrimSpace(matches[2])
+
+			output.WriteString(fmt.Sprintf("%s = %s\n", key, value))
 			continue
 		}
 

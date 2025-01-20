@@ -1,6 +1,8 @@
 package portable
 
 import (
+	"fmt"
+	"github.com/Hzqkii/smoothie-go/migrate"
 	"log"
 	"os"
 	"path/filepath"
@@ -67,6 +69,24 @@ func GetRecipePathCustom(name string) string {
 func GetRecipePath() string {
 	recipePath := GetRecipePathCustom("recipe.ini")
 	if _, err := os.Stat(recipePath); os.IsNotExist(err) {
+		if _, err := os.Stat(GetRecipeSmrs()); err == nil {
+			fmt.Printf("Would you like to migrate your recipe? (y/n) ")
+			var input string
+			fmt.Scanln(&input)
+			if input == "y" {
+				fmt.Println("Migrating recipe...")
+				rcPath := GetRecipeSmrs()
+				rc, err := migrate.Migrate(rcPath)
+				if err != nil {
+					log.Fatal(err)
+				}
+				dropFileAtPath(recipePath, []byte(rc))
+				return recipePath
+			} else {
+				fmt.Println("Skipping migration...")
+			}
+
+		}
 		dropFileAtPath(recipePath, []byte(recipe_ini))
 	}
 	return recipePath
