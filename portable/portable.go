@@ -14,9 +14,8 @@ func GetExecutableDirectory() string {
 	return filepath.Dir(exe)
 }
 
-// Used for dropping all the scripts, configs and models on request
 func dropFileAtPath(path string, contents []byte) {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Dir(path)); os.IsNotExist(err) {
 		log.Fatal("DEV Error: must check if stuff exists before writing")
 	}
 
@@ -27,7 +26,7 @@ func dropFileAtPath(path string, contents []byte) {
 }
 
 func IsPortable() bool {
-	if _, err := os.Stat(filepath.Join(GetExecutableDirectory(), "portable")); err == nil {
+	if _, err := os.Stat(filepath.Join(GetExecutableDirectory(), "smoothie-go.portable")); err == nil {
 		return true
 	}
 	return false
@@ -71,6 +70,15 @@ func GetRecipePath() string {
 		dropFileAtPath(recipePath, []byte(recipe_ini))
 	}
 	return recipePath
+}
+
+func GetDefaultRecipePath() string {
+	defaultsPath := filepath.Join(GetExecutableDirectory(), "defaults.ini")
+
+	if _, err := os.Stat(defaultsPath); os.IsNotExist(err) {
+		dropFileAtPath(defaultsPath, []byte(defaults_ini))
+	}
+	return defaultsPath
 }
 
 func GetEncodingPresetsPath() string {

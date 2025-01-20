@@ -4,7 +4,7 @@ import (
 	"log"
 )
 
-func ParseArgs(args []string) *Arguments {
+func parseArgs(args []string) *Arguments {
 	var arguments Arguments
 	for i := 0; i < len(args); i++ {
 		arg := args[i]

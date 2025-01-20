@@ -32,5 +32,5 @@ func SetupArgs() *Arguments {
 			log.Printf("Root directory: %s", portable.GetExecutableDirectory())
 		}
 	}
-	return ParseArgs(argv)
+	return validateArgs(parseArgs(argv))
 }

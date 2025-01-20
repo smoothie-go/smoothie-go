@@ -9,8 +9,8 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
 
 ### Internal
 
-- [ ] **config**
-  - [ ] Parsing INI
+- [x] **config**
+  - [x] Parsing INI
   - [x] Getting configs
   - [x] Presistent configs (Pretty much just, delete the file, it reappears on the next run)
 
@@ -19,9 +19,9 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [ ] RIFE
   - [ ] Nvidia Optical Flow (Will be limited to linux users, unless you buy SVPFlow unfortunately)
 
-- [ ] **Args**
+- [x] **Args**
   - [x] Parsing args
-  - [ ] Validating args
+  - [x] Validating args
 
 ### Recipe
 - [ ] **interpolation**

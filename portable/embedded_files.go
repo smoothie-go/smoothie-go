@@ -10,6 +10,9 @@ import (
 //go:embed assets/recipe.ini
 var recipe_ini string
 
+//go:embed assets/defaults.ini
+var defaults_ini string
+
 //go:embed assets/encoding_presets.ini
 var encoding_resets_ini string
 
