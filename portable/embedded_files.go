@@ -19,6 +19,9 @@ var encoding_resets_ini string
 //go:embed assets/models/*
 var models embed.FS
 
+//go:embed assets/scripts/*
+var scripts embed.FS
+
 // Putting this here as this is the only place where im embedding anything really
 func writeEmbeddedFiles(embedFS embed.FS, targetDir string, embedPath string) error {
 	entries, err := embedFS.ReadDir(embedPath)

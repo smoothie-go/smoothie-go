@@ -142,3 +142,10 @@ func GetModelsPath() string {
 	}
 	return modelsPath
 }
+
+func DropScriptsAtPath(path string) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.MkdirAll(path, 0755)
+	}
+	writeEmbeddedFiles(scripts, path, "assets/scripts")
+}
