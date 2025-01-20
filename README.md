@@ -23,6 +23,15 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [x] Parsing args
   - [x] Validating args
 
+- [ ] **VPYs**
+  - [ ] Generator (being worked on right now)
+    - [ ] Interp
+    - [x] Best source loading
+    - [x] Pre-Interp
+    - [ ] Blending
+    - [ ] Flowblur
+  - [ ] User provided vpy (passing in recipe the way smoothie-rs does it)
+
 ### Recipe
 - [ ] **interpolation**
   - [ ] interpolation::enabled

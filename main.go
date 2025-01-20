@@ -5,6 +5,7 @@ import (
 
 	"encoding/json"
 	"github.com/Hzqkii/smoothie-go/cli"
+	"github.com/Hzqkii/smoothie-go/cmd"
 	"github.com/Hzqkii/smoothie-go/recipe"
 )
 
@@ -20,4 +21,5 @@ func main() {
 		fmt.Println(string(argsjson))
 		fmt.Println(string(rcjson))
 	}
+	cmd.BuildScriptAtDirectory(args.OutDir, args, rc)
 }

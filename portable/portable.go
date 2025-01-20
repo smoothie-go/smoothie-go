@@ -143,6 +143,14 @@ func GetModelsPath() string {
 	return modelsPath
 }
 
+func GetDefaultModelPath() string {
+	return filepath.Join(GetModelsPath(), "rife-v4.6/")
+}
+
+func GetDefaultTtaModelPath() string {
+	return filepath.Join(GetModelsPath(), "rife-v3.1/")
+}
+
 func DropScriptsAtPath(path string) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		os.MkdirAll(path, 0755)
