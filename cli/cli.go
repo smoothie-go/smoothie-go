@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/Hzqkii/smoothie-go/portable"
+	"github.com/smoothie-go/smoothie-go/portable"
 	"log"
 	"os"
 )

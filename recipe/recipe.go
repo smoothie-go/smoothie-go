@@ -1,8 +1,8 @@
 package recipe
 
 import (
-	"github.com/Hzqkii/smoothie-go/cli"
-	"github.com/Hzqkii/smoothie-go/portable"
+	"github.com/smoothie-go/smoothie-go/cli"
+	"github.com/smoothie-go/smoothie-go/portable"
 	"gopkg.in/ini.v1"
 	"log"
 )

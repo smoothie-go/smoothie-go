@@ -2,8 +2,8 @@ package cli
 
 import (
 	"fmt"
-	"github.com/Hzqkii/smoothie-go/fruits"
-	"github.com/Hzqkii/smoothie-go/portable"
+	"github.com/smoothie-go/smoothie-go/fruits"
+	"github.com/smoothie-go/smoothie-go/portable"
 	"log"
 	"os"
 	"path/filepath"

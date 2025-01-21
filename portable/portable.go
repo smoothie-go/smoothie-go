@@ -2,7 +2,7 @@ package portable
 
 import (
 	"fmt"
-	"github.com/Hzqkii/smoothie-go/migrate"
+	"github.com/smoothie-go/smoothie-go/migrate"
 	"log"
 	"os"
 	"path/filepath"

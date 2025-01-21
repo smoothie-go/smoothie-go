@@ -5,10 +5,9 @@ import (
 
 	"encoding/json"
 
-	"github.com/Hzqkii/smoothie-go/cli"
-	"github.com/Hzqkii/smoothie-go/recipe"
-	"github.com/Hzqkii/smoothie-go/weighting"
-	//"github.com/Hzqkii/smoothie-go/weighting"
+	"github.com/smoothie-go/smoothie-go/cli"
+	"github.com/smoothie-go/smoothie-go/recipe"
+	"github.com/smoothie-go/smoothie-go/weighting"
 )
 
 func main() {

@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Hzqkii/smoothie-go/cli"
-	rc "github.com/Hzqkii/smoothie-go/recipe"
+	"github.com/smoothie-go/smoothie-go/cli"
+	rc "github.com/smoothie-go/smoothie-go/recipe"
 )
 
 func Parse(args *cli.Arguments, recipe *rc.Recipe) {

@@ -1,4 +1,4 @@
-module github.com/Hzqkii/smoothie-go
+module github.com/smoothie-go/smoothie-go
 
 go 1.18
 
