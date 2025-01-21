@@ -31,12 +31,6 @@ func parseArgs(args []string) *Arguments {
 			}
 			arguments.OutDir = args[i+1]
 			i++
-		case "--vpy", "-vp":
-			if i == len(args)-1 {
-				log.Fatal("You must provide a vpy file")
-			}
-			arguments.Vpy = args[i+1]
-			i++
 		case "--encargs", "-e":
 			if i == len(args)-1 {
 				log.Fatal("You must provide encoding arguments")

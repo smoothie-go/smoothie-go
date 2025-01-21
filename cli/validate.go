@@ -17,6 +17,13 @@ func validateArgs(args *Arguments) *Arguments {
 		log.Fatal("Input file does not exist")
 	}
 
+	fps, err := GetFramerate(args.InputFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	args.InputFps = int(fps)
+
 	inputBaseName := filepath.Base(args.InputFile)
 	inputDirectory := filepath.Dir(args.InputFile)
 	extIndex := strings.LastIndex(inputBaseName, ".")
@@ -43,10 +50,6 @@ func validateArgs(args *Arguments) *Arguments {
 		if _, err := os.Stat(args.RecipePath); os.IsNotExist(err) {
 			log.Fatal("Recipe file does not exist at " + args.RecipePath)
 		}
-	}
-
-	if args.Vpy == "" {
-		args.Vpy = "DynamicScriptBuilder"
 	}
 
 	return args
