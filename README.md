@@ -28,9 +28,9 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
     - [ ] Interp
     - [x] Best source loading
     - [x] Pre-Interp
-    - [ ] Blending
+    - [x] Blending
     - [ ] Flowblur
-  - [ ] User provided vpy
+  - [ ] ~~User provided vpy~~ *Not going to be implemented*
 
 ### Recipe
 - [ ] **interpolation**
@@ -45,11 +45,11 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [ ] interpolation::use_gpu
   - [ ] interpolation::area
 
-- [ ] **frame_blending**
-  - [ ] frame_blending::enabled
-  - [ ] frame_blending::fps
-  - [ ] frame_blending::intensity
-  - [ ] frame_blending::weighting
+- [x] **frame_blending**
+  - [x] frame_blending::enabled
+  - [x] frame_blending::fps
+  - [x] frame_blending::intensity
+  - [x] frame_blending::weighting
   - [ ] frame_blending::bright_blend
 
 - [ ] **flowblur**
@@ -60,9 +60,9 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
 
 - [ ] **output**
   - [ ] output::process
-  - [ ] output::enc_args
+  - [x] output::enc_args
   - [ ] output::file_format
-  - [ ] output::container
+  - [x] output::container
 
 - [ ] **preview_window**
   - [ ] preview_window::enabled
@@ -77,12 +77,12 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
 
 - [ ] **miscellaneous**
   - [ ] miscellaneous::play_ding
-  - [ ] miscellaneous::always_verbose
-  - [ ] miscellaneous::dedup_threshold
+  - [x] miscellaneous::always_verbose
+  - [x] miscellaneous::dedup_threshold
   - [ ] miscellaneous::global_output_folder
   - [ ] miscellaneous::source_indexing
-  - [ ] miscellaneous::ffmpeg_options
-  - [ ] miscellaneous::ffplay_options
+  - [x] miscellaneous::ffmpeg_options
+  - [x] miscellaneous::ffplay_options
 
 - [ ] **console**
   - [ ] console::stay_on_top
@@ -95,27 +95,27 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [ ] timescale::in
   - [ ] timescale::out
 
-- [ ] **color_grading**
-  - [ ] color_grading::enabled
-  - [ ] color_grading::brightness
-  - [ ] color_grading::saturation
-  - [ ] color_grading::contrast
-  - [ ] color_grading::hue
-  - [ ] color_grading::coring
+- [x] **color_grading**
+  - [x] color_grading::enabled
+  - [x] color_grading::brightness
+  - [x] color_grading::saturation
+  - [x] color_grading::contrast
+  - [x] color_grading::hue
+  - [x] color_grading::coring
 
 - [ ] **lut**
   - [ ] lut::enabled
   - [ ] lut::path
   - [ ] lut::opacity
 
-- [ ] **pre_interp**
-  - [ ] pre_interp::enabled
-  - [ ] pre_interp::scene_change
-  - [ ] pre_interp::tta
-  - [ ] pre_interp::uhd
-  - [ ] pre_interp::masking
-  - [ ] pre_interp::factor
-  - [ ] pre_interp::model
+- [x] **pre_interp**
+  - [x] pre_interp::enabled
+  - [x] pre_interp::scene_change
+  - [x] pre_interp::tta
+  - [x] pre_interp::uhd
+  - [x] pre_interp::masking
+  - [x] pre_interp::factor
+  - [x] pre_interp::model
 
 ## Priorities
 

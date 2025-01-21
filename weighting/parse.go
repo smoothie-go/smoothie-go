@@ -1,6 +1,7 @@
 package weighting
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -14,11 +15,20 @@ func Parse(args *cli.Arguments, recipe *rc.Recipe) {
 
 	if recipe.Interpolation.Enabled {
 		videoFps = recipe.Interpolation.Fps
+	} else if recipe.PreInterp.Enabled {
+		var factor int
+		fmt.Sscanf(recipe.PreInterp.Factor, "%d", &factor)
+
+		videoFps = args.InputFps * factor
 	} else {
 		videoFps = args.InputFps
+		log.Println(videoFps)
 	}
 
 	frameGap := videoFps / recipe.FrameBlending.Fps
+	if frameGap == 0 {
+		frameGap = 1
+	}
 	actualWeights := frameGap * int(recipe.FrameBlending.Intensity)
 
 	if actualWeights > 0 {

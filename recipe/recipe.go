@@ -34,5 +34,7 @@ func Parse(args *cli.Arguments) *Recipe {
 		args.Verbose = true
 	}
 
+	recipe = Validate(args, recipe)
+
 	return recipe
 }

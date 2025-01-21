@@ -26,3 +26,10 @@ go.work.sum
 
 # env file
 .env
+
+# python
+__pycache__
+.venv/
+
+# macOS
+.DS_Store

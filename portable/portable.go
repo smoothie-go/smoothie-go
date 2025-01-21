@@ -2,10 +2,13 @@ package portable
 
 import (
 	"fmt"
-	"github.com/smoothie-go/smoothie-go/migrate"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
+
+	"github.com/smoothie-go/smoothie-go/migrate"
 )
 
 func GetExecutableDirectory() string {
@@ -143,6 +146,20 @@ func GetModelsPath() string {
 	return modelsPath
 }
 
+func GetBinaryInPathOrBinPath(binary string) string {
+	if runtime.GOOS == "windows" {
+		binary += ".exe"
+	}
+	execInPath, _ := exec.LookPath(binary)
+	if _, err := os.Stat(filepath.Join(GetExecutableDirectory(), binary)); err == nil {
+		return filepath.Join(GetExecutableDirectory(), binary)
+	} else if _, err := os.Stat(execInPath); err == nil {
+		return execInPath
+	} else {
+		return ""
+	}
+}
+
 func GetDefaultModelPath() string {
 	return filepath.Join(GetModelsPath(), "rife-v4.6/")
 }
@@ -156,4 +173,18 @@ func DropScriptsAtPath(path string) {
 		os.MkdirAll(path, 0755)
 	}
 	writeEmbeddedFiles(scripts, path, "assets/scripts")
+}
+
+func GetMainVpyPath() string {
+	var path string
+	if IsPortable() {
+		path = filepath.Join(GetExecutableDirectory(), "scripts", "main.vpy")
+	} else {
+		path = filepath.Join(GetLocalDirectory(), "scripts", "main.vpy")
+	}
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		DropScriptsAtPath(filepath.Dir(path))
+	}
+
+	return path
 }
