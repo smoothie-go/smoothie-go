@@ -12,11 +12,21 @@ import (
 	"github.com/smoothie-go/smoothie-go/recipe"
 )
 
-func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe) ([]string, []string) {
+func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe) ([]string, []string, []string) {
 	//look for Vspipe
 	vspipe := portable.GetBinaryInPathOrBinPath("vspipe")
 	if vspipe == "" {
 		log.Panicln("Vspipe not found")
+	}
+
+	ffmpeg := portable.GetBinaryInPathOrBinPath("ffmpeg")
+	if ffmpeg == "" {
+		log.Panicln("FFmpeg not found")
+	}
+
+	ffplay := portable.GetBinaryInPathOrBinPath("ffplay")
+	if ffplay == "" {
+		log.Panicln("FFplay not found")
 	}
 
 	argsjson, _ := json.Marshal(args)
@@ -35,16 +45,16 @@ func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe) ([]string, []s
 		"--arg", "args=" + string(argsjson),
 	}
 
-	ffmpeg := portable.GetBinaryInPathOrBinPath("ffmpeg")
-	if ffmpeg == "" {
-		log.Panicln("FFmpeg not found")
-	}
-
 	encArgs := strings.Split(rc.Output.EncArgs, " ")
 	ffArgs := strings.Split(rc.Miscellaneous.FfmpegOptions, " ")
+	ffplayArgs := strings.Split(rc.Miscellaneous.FfplayOptions, " ")
 
 	ffmpegCmd := []string{
 		ffmpeg,
+	}
+
+	ffplayCmd := []string{
+		ffplay,
 	}
 
 	for _, arg := range ffArgs {
@@ -55,7 +65,11 @@ func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe) ([]string, []s
 		ffmpegCmd = append(ffmpegCmd, arg)
 	}
 
+	for _, arg := range ffplayArgs {
+		ffplayCmd = append(ffplayCmd, arg)
+	}
+
 	ffmpegCmd = append(ffmpegCmd, filepath.Join(args.OutDir, args.OutputFile)+strings.ToLower(rc.Output.Container))
 
-	return vspipeCmd, ffmpegCmd
+	return vspipeCmd, ffmpegCmd, ffplayCmd
 }

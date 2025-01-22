@@ -25,7 +25,7 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
 
 - [ ] **VPYs**
   - [ ] Built in (being worked on right now)
-    - [ ] Interp
+    - [x] Interp
     - [x] Best source loading
     - [x] Pre-Interp
     - [x] Blending
@@ -33,19 +33,19 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [ ] ~~User provided vpy~~ *Not going to be implemented*
 
 ### Recipe
-- [ ] **interpolation**
-  - [ ] interpolation::enabled
-  - [ ] interpolation::type (SVP/OF)
+- [x] **interpolation**
+  - [x] interpolation::enabled
+  - [x] interpolation::type (SVP/OF)
   - [ ] interpolation::masking
-  - [ ] interpolation::fps
-  - [ ] interpolation::speed
-  - [ ] interpolation::tuning
-  - [ ] interpolation::algorithm
+  - [x] interpolation::fps
+  - [x] interpolation::speed
+  - [x] interpolation::tuning
+  - [x] interpolation::algorithm
   - [ ] interpolation::block_size
-  - [ ] interpolation::use_gpu
+  - [x] interpolation::use_gpu
   - [ ] interpolation::area
 
-- [x] **frame_blending**
+- [ ] **frame_blending**
   - [x] frame_blending::enabled
   - [x] frame_blending::fps
   - [x] frame_blending::intensity
@@ -65,9 +65,9 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [x] output::container
 
 - [ ] **preview_window**
-  - [ ] preview_window::enabled
+  - [x] preview_window::enabled
   - [ ] preview_window::process
-  - [ ] preview_window::output_args
+  - [x] preview_window::output_args
 
 - [ ] **artifact_masking**
   - [ ] artifact_masking::enabled
