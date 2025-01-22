@@ -8,6 +8,9 @@
 *.so
 *.dylib
 
+#except for VapourSynth plugins
+!resources/vapoursynth/*.so
+
 # Test binary, built with `go test -c`
 *.test
 
