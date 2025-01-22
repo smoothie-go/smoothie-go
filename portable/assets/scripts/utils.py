@@ -1,3 +1,6 @@
+import vapoursynth as vs
+from vapoursynth import core
+
 def yuv_heuristic(width: int, height: int) :
     result = {}
 

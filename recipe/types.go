@@ -8,7 +8,7 @@ type Recipe struct {
 		Fps       int    `ini:"fps" json:"fps"`
 		Speed     string `ini:"speed" json:"speed"`
 		Tuning    string `ini:"tuning" json:"tuning"`
-		Algorithm string `ini:"algorithm" json:"algorithm"`
+		Algorithm int    `ini:"algorithm" json:"algorithm"`
 		Gpu       bool   `ini:"use gpu" json:"use_gpu"`
 	} `ini:"interpolation" json:"interpolation"`
 

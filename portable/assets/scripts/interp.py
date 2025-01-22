@@ -4,6 +4,7 @@ from vapoursynth import core
 import havsfunc
 import utils
 import json
+import sys
 
 def interp(clip: vs.VideoNode, args: dict, recipe: dict) -> vs.VideoNode:
     # SVP
@@ -19,10 +20,6 @@ def interp(clip: vs.VideoNode, args: dict, recipe: dict) -> vs.VideoNode:
 
     if recipe["interpolation"]["type"] == "svp":
         try:
-            clip = havsfunc.InterFrame(clip)
-        except Exception as e:
-            raise
-        try:
             clip = havsfunc.InterFrame(
                     Input=clip,
                     GPU=recipe["interpolation"]["use_gpu"],
@@ -30,9 +27,9 @@ def interp(clip: vs.VideoNode, args: dict, recipe: dict) -> vs.VideoNode:
                     Tuning=recipe["interpolation"]["tuning"],
                     NewNum=recipe["interpolation"]["fps"],
                     NewDen=1,
-                    OverrideAlgo=recipe["algorithm"],
-                    OverrideBlockSize=recipe["interpolation"]["block_size"],
+                    OverrideAlgo=recipe["interpolation"]["algorithm"],
                     )
+            print(clip, file=sys.stderr)
         except Exception as e:
             raise
     elif recipe["interpolation"]["type"] == "of":
@@ -56,4 +53,8 @@ def interp(clip: vs.VideoNode, args: dict, recipe: dict) -> vs.VideoNode:
             )
         except Exception as e:
             raise
+
+    if scaled:
+        clip = utils.ScaleLuminance(False, clip)
+
     return clip

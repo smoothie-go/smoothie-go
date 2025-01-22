@@ -22,6 +22,11 @@ func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe) ([]string, []s
 	argsjson, _ := json.Marshal(args)
 	rcjson, _ := json.Marshal(rc)
 
+	if args.Verbose {
+		log.Println(string(rcjson))
+		log.Println(string(argsjson))
+	}
+
 	vspipeCmd := []string{
 		vspipe,
 		"--container", "y4m", "-",

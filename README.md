@@ -14,10 +14,10 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [x] Getting configs
   - [x] Presistent configs (Pretty much just, delete the file, it reappears on the next run)
 
-- [ ] **Interpolation**
-  - [ ] SVP
-  - [ ] RIFE
-  - [ ] Nvidia Optical Flow (Will be limited to linux users, unless you buy SVPFlow unfortunately)
+- [x] **Interpolation**
+  - [x] SVP
+  - [x] RIFE
+  - [x] Nvidia Optical Flow (Will be limited to linux users, unless you buy SVPFlow unfortunately)
 
 - [x] **Args**
   - [x] Parsing args
