@@ -25,8 +25,7 @@ def pre_interp(clip, args, recipe) -> vs.VideoNode:
                 **heuristic
                 )
     except Exception as e:
-        print(f"Failed to resize(first): {e}", file=sys.stderr)
-        exit(1)
+        raise
     
     factor = recipe["pre_interp"]["factor"].strip('x')
 
@@ -43,9 +42,8 @@ def pre_interp(clip, args, recipe) -> vs.VideoNode:
                 sc=recipe["pre_interp"]["scene_change"],
                 )
     except Exception as e:
-        print(f"Failed to run RIFE: {e}", file=sys.stderr)
-        exit(1)
-    
+        raise
+        
     try:
         clip = core.resize.Bicubic(
                clip=clip,
@@ -53,7 +51,6 @@ def pre_interp(clip, args, recipe) -> vs.VideoNode:
                 **not_in_heuristic
                 )
     except Exception as e:
-        print(f"Failed to resize: {e}", file=sys.stderr)
-        exit(1)
+        raise
 
     return clip

@@ -5,9 +5,16 @@ import math
 import havsfunc
 
 def Frameblend(clip, args, recipe) -> vs.VideoNode:
-    clip = core.frameblender.FrameBlend(clip, args["weighting"], True)
-    clip = havsfunc.ChangeFPS(
-            clip,
-            recipe["frame_blending"]["fps"]
-            )
+    try:
+        clip = core.frameblender.FrameBlend(clip, args["weighting"], True)
+    except Exception as e:
+        raise
+
+    try:
+        clip = havsfunc.ChangeFPS(
+                clip,
+                recipe["frame_blending"]["fps"]
+                )
+    except Exception as e:
+        raise
     return clip

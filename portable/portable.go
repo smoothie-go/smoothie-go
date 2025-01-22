@@ -50,7 +50,12 @@ func GetConfigDirectory() string {
 		return GetExecutableDirectory()
 	}
 
-	configDirectory := filepath.Join(GetUserHome(), ".config", "smoothie-go")
+	osConfigDirctory, err := os.UserConfigDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	configDirectory := filepath.Join(osConfigDirctory, "smoothie-go")
 	if err := os.MkdirAll(configDirectory, 0755); err != nil {
 		log.Fatal(err)
 	}
@@ -58,6 +63,12 @@ func GetConfigDirectory() string {
 }
 
 func GetLocalDirectory() string {
+	if IsPortable() {
+		return GetExecutableDirectory()
+	}
+	if runtime.GOOS == "windows" {
+		return GetConfigDirectory()
+	}
 	localDirectory := filepath.Join(GetUserHome(), ".local", "share", "smoothie-go")
 	if err := os.MkdirAll(localDirectory, 0755); err != nil {
 		log.Fatal(err)
@@ -98,7 +109,7 @@ func GetRecipePath() string {
 }
 
 func GetDefaultRecipePath() string {
-	defaultsPath := filepath.Join(GetExecutableDirectory(), "defaults.ini")
+	defaultsPath := filepath.Join(GetConfigDirectory(), "defaults.ini")
 
 	if _, err := os.Stat(defaultsPath); os.IsNotExist(err) {
 		dropFileAtPath(defaultsPath, []byte(defaults_ini))
@@ -187,4 +198,18 @@ func GetMainVpyPath() string {
 	}
 
 	return path
+}
+
+func GetLogPath() string {
+	if runtime.GOOS == "windows" {
+		return filepath.Join(GetConfigDirectory(), "smoothie-go.log")
+	}
+	logPath := filepath.Join(GetUserHome(), ".local", "state", "smoothie-go.log")
+	if _, err := os.Stat(logPath); os.IsNotExist(err) {
+		err := os.MkdirAll(filepath.Dir(logPath), 0755)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	return logPath
 }

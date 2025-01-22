@@ -25,9 +25,6 @@ func Render(args *cli.Arguments, rc *recipe.Recipe) {
 	}
 	ffmpegCmd.Stdin = pipe
 
-	log.Println(ffmpeg)
-	log.Println(vspipe)
-
 	if err := vspipeCmd.Start(); err != nil {
 		log.Fatalf("Failed to start vspipe command: %v", err)
 	}

@@ -67,6 +67,8 @@ type Recipe struct {
 		Brightness float32 `ini:"brightness" json:"brightness"`
 		Saturation float32 `ini:"saturation" json:"saturation"`
 		Contrast   float32 `ini:"contrast" json:"contrast"`
+		Hue        float32 `ini:"hue" json:"hue"`
+		Coring     float32 `ini:"coring" json:"coring"`
 	} `ini:"color grading" json:"color_grading"`
 
 	Lut struct {
