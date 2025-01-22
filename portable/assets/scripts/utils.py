@@ -37,3 +37,25 @@ def yuv_heuristic(width: int, height: int) :
         result["chromaloc_in_s"] = "left"
 
     return result
+
+def ScaleLuminance (scale: bool, clip: vs.VideoNode):
+    try:
+        y = core.std.ShufflePlanes(clip, planes=0, colorfamily=vs.GRAY)
+        u = core.std.ShufflePlanes(clip, planes=1, colorfamily=vs.GRAY)
+        v = core.std.ShufflePlanes(clip, planes=2, colorfamily=vs.GRAY)
+    except Exception as e:
+        raise
+    try:
+        if scale: # up
+            y = core.resize.Point(y, width=y.width * 2, height=y.height * 2)
+        else: # down
+            y = core.resize.Point(y, width=y.width / 2, height=y.height / 2)
+    except Exception as e:
+        raise
+
+    try:
+        clip = core.std.ShufflePlanes(clips=[y, u, v], planes=[0, 0, 0], colorfamily=vs.YUV)
+    except Exception as e:
+        raise
+
+    return clip

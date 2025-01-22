@@ -95,6 +95,14 @@ if recipe["pre_interp"]["enabled"]:
         exit(1)
 if recipe["interpolation"]["enabled"]:
     import interp # interp
+    try:
+        interp.interp(clip, arguments, recipe)
+    except Exception as e:
+        if e == "slowinterp":
+            logger.warning(f"Using a slow work around for i444 not being supported")
+        else:
+            logger.error(f"Failed to apply interpolation: {e}")
+            exit(1)
 
 if recipe["frame_blending"]["enabled"]:
     import frameblend
