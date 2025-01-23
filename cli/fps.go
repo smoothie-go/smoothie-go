@@ -7,10 +7,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/smoothie-go/smoothie-go/portable"
 	"gopkg.in/vansante/go-ffprobe.v2"
 )
 
 func GetFramerate(filePath string) (float64, error) {
+	ffprobe.SetFFProbeBinPath(portable.GetBinaryInPathOrBinPath("ffprobe"))
 	ctx, cancelFn := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancelFn()
 	metadata, err := ffprobe.ProbeURL(ctx, filePath)
