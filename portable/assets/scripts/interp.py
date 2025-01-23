@@ -29,8 +29,7 @@ def interp(clip: vs.VideoNode, args: dict, recipe: dict) -> vs.VideoNode:
                     NewDen=1,
                     OverrideAlgo=recipe["interpolation"]["algorithm"],
                     )
-            print(clip, file=sys.stderr)
-        except Exception as e:
+        except Exception:
             raise
     elif recipe["interpolation"]["type"] == "of":
         # Tekno's code

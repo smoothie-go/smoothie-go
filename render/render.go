@@ -15,11 +15,20 @@ func Render(args *cli.Arguments, rc *recipe.Recipe) {
 	vspipe, ffmpeg, ffplay := cmd.VspipeCommandBuilder(args, rc)
 	vspipeCmd := exec.Command(vspipe[0], vspipe[1:]...)
 	ffmpegCmd := exec.Command(ffmpeg[0], ffmpeg[1:]...)
-	ffplayCmd := exec.Command(ffplay[0], ffplay[1:]...)
 
 	vspipeCmd.Stderr = os.Stderr
 	ffmpegCmd.Stderr = os.Stderr
-	ffplayCmd.Stderr = os.Stderr
+
+	var ffplayCmd *exec.Cmd
+	var pipeReader2 *io.PipeReader
+	var pipeWriter2 *io.PipeWriter
+
+	if rc.PreviewWindow.Enabled {
+		ffplayCmd = exec.Command(ffplay[0], ffplay[1:]...)
+		ffplayCmd.Stderr = os.Stderr
+		pipeReader2, pipeWriter2 = io.Pipe()
+		ffplayCmd.Stdin = pipeReader2
+	}
 
 	vspipeOut, err := vspipeCmd.StdoutPipe()
 	if err != nil {
@@ -27,21 +36,23 @@ func Render(args *cli.Arguments, rc *recipe.Recipe) {
 	}
 
 	pipeReader1, pipeWriter1 := io.Pipe()
-	pipeReader2, pipeWriter2 := io.Pipe()
 
 	go func() {
 		defer pipeWriter1.Close()
-		defer pipeWriter2.Close()
-		multiWriter := io.MultiWriter(pipeWriter1, pipeWriter2)
-		if _, err := io.Copy(multiWriter, vspipeOut); err != nil {
-			log.Printf("Error while copying vspipe output: %v", err)
+		if rc.PreviewWindow.Enabled {
+			defer pipeWriter2.Close()
+			multiWriter := io.MultiWriter(pipeWriter1, pipeWriter2)
+			if _, err := io.Copy(multiWriter, vspipeOut); err != nil {
+				log.Printf("Error while copying vspipe output: %v", err)
+			}
+		} else {
+			if _, err := io.Copy(pipeWriter1, vspipeOut); err != nil {
+				log.Printf("Error while copying vspipe output: %v", err)
+			}
 		}
 	}()
 
 	ffmpegCmd.Stdin = pipeReader1
-	if rc.PreviewWindow.Enabled {
-		ffplayCmd.Stdin = pipeReader2
-	}
 
 	if err := vspipeCmd.Start(); err != nil {
 		log.Fatalf("Failed to start vspipe command: %v", err)
