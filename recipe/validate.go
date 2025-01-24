@@ -40,8 +40,21 @@ func Validate(args *cli.Arguments, recipe *Recipe) *Recipe {
 		}
 	}
 
-	if recipe.FrameBlending.Enabled && recipe.FrameBlending.Fps > args.InputFps {
-		log.Fatal("Frame blending fps cannot be higher than input fps")
+	interpEnabled := recipe.Interpolation.Enabled
+	frameBlendingEnabled := recipe.FrameBlending.Enabled
+	interpFps := recipe.Interpolation.Fps
+	frameBlendingFps := recipe.FrameBlending.Fps
+	inputFps := args.InputFps
+
+	if interpEnabled && frameBlendingEnabled {
+		if interpFps <= inputFps {
+			log.Fatal("Interpolation FPS must be higher than input FPS")
+		}
+		if frameBlendingFps >= interpFps {
+			log.Fatal("Frame blending FPS must be lower than interpolation FPS")
+		}
+	} else if frameBlendingEnabled && frameBlendingFps > inputFps {
+		log.Fatal("Frame blending FPS cannot be higher than input FPS")
 	}
 
 	return recipe
