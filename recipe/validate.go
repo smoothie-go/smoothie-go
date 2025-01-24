@@ -28,20 +28,12 @@ func Validate(args *cli.Arguments, recipe *Recipe) *Recipe {
 		}
 	}
 
-	// check if interp is higher than input
-	if recipe.Interpolation.Enabled && recipe.Interpolation.Fps < args.InputFps {
-		log.Fatal("Interpolation fps cannot be lower than input fps")
-	} else if recipe.PreInterp.Enabled && recipe.Interpolation.Enabled {
-		var factor int
-		fmt.Sscanf(recipe.PreInterp.Factor, "%d", &factor)
-
-		if recipe.Interpolation.Fps*factor < (args.InputFps * factor) {
-			log.Fatal("Interpolation fps cannot be lower than pre-interped fps")
-		}
-	}
-
 	interpEnabled := recipe.Interpolation.Enabled
 	frameBlendingEnabled := recipe.FrameBlending.Enabled
+	preinterpEnabled := recipe.PreInterp.Enabled
+
+	var preinterpFactor int
+	fmt.Sscanf(recipe.PreInterp.Factor, "%d", &preinterpFactor)
 	interpFps := recipe.Interpolation.Fps
 	frameBlendingFps := recipe.FrameBlending.Fps
 	inputFps := args.InputFps
@@ -52,6 +44,10 @@ func Validate(args *cli.Arguments, recipe *Recipe) *Recipe {
 		}
 		if frameBlendingFps >= interpFps {
 			log.Fatal("Frame blending FPS must be lower than interpolation FPS")
+		}
+	} else if preinterpEnabled && frameBlendingEnabled {
+		if (inputFps * preinterpFactor) <= inputFps {
+			log.Fatal("Interpolation FPS must be higher than input FPS")
 		}
 	} else if frameBlendingEnabled && frameBlendingFps > inputFps {
 		log.Fatal("Frame blending FPS cannot be higher than input FPS")
