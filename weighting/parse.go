@@ -3,6 +3,7 @@ package weighting
 import (
 	"fmt"
 	"log"
+	"math"
 	"strconv"
 	"strings"
 
@@ -29,7 +30,7 @@ func Parse(args *cli.Arguments, recipe *rc.Recipe) {
 	if frameGap == 0 {
 		frameGap = 1
 	}
-	actualWeights := frameGap * int(recipe.FrameBlending.Intensity)
+	actualWeights := int(math.Ceil(float64(frameGap) * float64(recipe.FrameBlending.Intensity)))
 
 	if actualWeights > 0 {
 		if actualWeights%2 == 0 {
