@@ -24,16 +24,21 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [x] Validating args
 
 - [ ] **VPYs**
-  - [ ] Built in (being worked on right now)
+  - [ ] Built in
     - [x] Interp
     - [x] Best source loading
     - [x] Pre-Interp
     - [x] Blending
     - [ ] Flowblur
+    - [ ] Masking
   - [ ] ~~User provided vpy~~ *Not going to be implemented*
 
 - [ ] **Server**
+  - [ ] oauth
+    - [ ] Discord
   - [ ] Auth
+    - [ ] Basic access token
+  - [ ] `smoothie-go server --authless`
   - [ ] /render
   - [ ] /config
   - [ ] /status
