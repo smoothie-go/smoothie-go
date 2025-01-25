@@ -32,6 +32,17 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
     - [ ] Flowblur
   - [ ] ~~User provided vpy~~ *Not going to be implemented*
 
+- [ ] **Server**
+  - [ ] Auth
+  - [ ] /render
+  - [ ] /config
+  - [ ] /status
+
+- [ ] **Web-UI**
+  - [ ] Status page
+  - [ ] Login page
+  - [ ] Config page
+
 ### Recipe
 - [x] **interpolation**
   - [x] interpolation::enabled
