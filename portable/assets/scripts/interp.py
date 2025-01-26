@@ -13,8 +13,10 @@ def interp(clip: vs.VideoNode, args: dict, recipe: dict) -> vs.VideoNode:
 
     if clip.format.id in [vs.YUV444P8]:
         scaled = True
-        raise Exception("slowinterp")
-        clip = utils.ScaleLuminance(True, clip)
+        try:
+            clip = utils.ScaleLuminance(True, clip)
+        except Exception as e:
+            raise
     else:
         scaled = False
 
@@ -54,6 +56,9 @@ def interp(clip: vs.VideoNode, args: dict, recipe: dict) -> vs.VideoNode:
             raise
 
     if scaled:
-        clip = utils.ScaleLuminance(False, clip)
+        try:
+            clip = utils.ScaleLuminance(False, clip)
+        except Exception as e:
+            raise
 
     return clip

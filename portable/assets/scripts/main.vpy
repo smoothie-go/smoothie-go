@@ -97,14 +97,17 @@ if recipe["pre_interp"]["enabled"]:
 if recipe["interpolation"]["enabled"]:
     import interp  # interp
     logger.debug(f"Interpolation: {recipe['interpolation']}")
+    if clip.format.id in [vs.YUV444P8]:
+        logger.warning("Slow interpolation due to YUV444P8 format")
     try:
         clip = interp.interp(clip, arguments, recipe)
     except Exception as e:
-        if str(e) == "slowinterp":
-            logger.warning("Using a slow workaround for i444 not being supported")
-        else:
-            logger.error(f"Failed to apply interpolation: {e}")
-            exit(1)
+        logger.error(f"Failed to apply interpolation: {e}")
+        exit(1)
+
+    if clip.fps.numerator/clip.fps.denominator != recipe["interpolation"]["fps"]:
+        logger.error(f"Interpolation Failed with unknown reason. Interpolation FPS: {clip.fps.numerator/clip.fps.denominator}, Recipe FPS: {recipe['interpolation']['fps']}")
+        exit(1)
     logger.debug(f"Interpolation: successful")
 if recipe["frame_blending"]["enabled"]:
     import frameblend
