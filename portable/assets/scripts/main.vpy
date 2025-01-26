@@ -93,14 +93,15 @@ if recipe["pre_interp"]["enabled"]:
     except Exception as e:
         logger.error(f"Failed to apply pre-interpolation: {e}")
         exit(1)
+
 if recipe["interpolation"]["enabled"]:
-    import interp # interp
+    import interp  # interp
     logger.debug(f"Interpolation: {recipe['interpolation']}")
     try:
         clip = interp.interp(clip, arguments, recipe)
     except Exception as e:
-        if e == "slowinterp":
-            logger.warning(f"Using a slow work around for i444 not being supported")
+        if str(e) == "slowinterp":
+            logger.warning("Using a slow workaround for i444 not being supported")
         else:
             logger.error(f"Failed to apply interpolation: {e}")
             exit(1)
