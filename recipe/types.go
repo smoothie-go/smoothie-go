@@ -5,6 +5,7 @@ type Recipe struct {
 		Enabled   bool   `ini:"enabled" json:"enabled"`
 		Masking   bool   `ini:"masking" json:"masking"`
 		Type      string `ini:"type" json:"type"`
+		OfBlocks  int    `ini:"of blocks" json:"of_blocks"`
 		Fps       int    `ini:"fps" json:"fps"`
 		Speed     string `ini:"speed" json:"speed"`
 		Tuning    string `ini:"tuning" json:"tuning"`

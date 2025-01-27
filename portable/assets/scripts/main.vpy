@@ -105,10 +105,11 @@ if recipe["interpolation"]["enabled"]:
         logger.error(f"Failed to apply interpolation: {e}")
         exit(1)
 
-    if clip.fps.numerator/clip.fps.denominator != recipe["interpolation"]["fps"]:
+    if abs(clip.fps.numerator / clip.fps.denominator - recipe["interpolation"]["fps"]) > 1e-6:
         logger.error(f"Interpolation Failed with unknown reason. Interpolation FPS: {clip.fps.numerator/clip.fps.denominator}, Recipe FPS: {recipe['interpolation']['fps']}")
         exit(1)
     logger.debug(f"Interpolation: successful")
+
 if recipe["frame_blending"]["enabled"]:
     import frameblend
     logger.debug(f"Frame blending: {recipe['frame_blending']}")
@@ -123,6 +124,5 @@ if clip is None:
     logger.error("Clip is None. Ensure all processing steps succeeded.")
 elif not isinstance(clip, vs.VideoNode):
     logger.error("Clip is not a valid VideoNode.")
-
 
 clip.set_output()

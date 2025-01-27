@@ -45,13 +45,12 @@ def interp(clip: vs.VideoNode, args: dict, recipe: dict) -> vs.VideoNode:
             "scene": {
                 "blend": False,
                 "mode": 0,
-                "limits": {"blocks": recipe["interpolation"]["block_size"]},
+                "limits": {"blocks": recipe["interpolation"]["of_blocks"]},
             },
         }
         try:
             clip = core.svp2.SmoothFps_NVOF(
-                clip, json.dumps(smooth_options), vec_src=clip, src=clip, fps=clip.fps
-            )
+                clip, json.dumps(smooth_options), clip)
         except Exception as e:
             raise
 
