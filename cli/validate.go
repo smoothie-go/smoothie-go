@@ -10,7 +10,7 @@ import (
 	"strings"
 )
 
-func validateArgs(args *Arguments) *Arguments {
+func ValidateArgs(args *Arguments) *Arguments {
 	if args.InputFile == "" {
 		log.Fatal("You must provide an input file")
 	} else if _, err := os.Stat(args.InputFile); os.IsNotExist(err) {

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"github.com/smoothie-go/smoothie-go/portable"
-	"github.com/smoothie-go/smoothie-go/server"
 	"log"
 	"os"
 	"path/filepath"
@@ -37,10 +36,7 @@ func SetupArgs() *Arguments {
 			log.Println("Reloading scripts...")
 			os.RemoveAll(filepath.Dir(portable.GetMainVpyPath())) // scripts
 			portable.GetMainVpyPath()
-		case "server":
-			log.Println("Starting server...")
-			server.SetupRouter().Run()
 		}
 	}
-	return validateArgs(parseArgs(argv))
+	return ValidateArgs(parseArgs(argv))
 }

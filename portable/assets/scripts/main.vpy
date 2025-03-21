@@ -5,6 +5,7 @@ import vapoursynth as vs
 from vapoursynth import core
 import json # to parse json recipe and args
 import sys # logger.error
+from sys import exit
 import os 
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -31,6 +32,7 @@ try:
     arguments: dict = json.loads(str(args))
 except json.JSONDecodeError as e:
     logger.error(f"Failed to parse args: {e}")
+    exit(1)
 
 file_handler = logging.FileHandler(arguments["log_file"], encoding="utf-8", mode="w")
 file_handler.setFormatter(formatter)
@@ -40,6 +42,7 @@ try:
     recipe: dict = json.loads(str(rec))
 except json.JSONDecodeError as e:
     logger.error(f"Failed to parse recipe: {e}")
+    exit(1)
 
 verbose: bool = arguments["verbose"]
 
@@ -48,11 +51,16 @@ if verbose:
 else:
     file_handler.setLevel(logging.INFO)
 # load input video
+
+arguments["out_dir"] = arguments["out_dir"].replace('\\','/')
+arguments["input_file"] = arguments["input_file"].replace('\\','/')
+
 cachepath: str = arguments["out_dir"] +"/"+ arguments["input_file"].split("/")[-1] + "-bsindex"
 
 logger.debug(f"Cache path: {cachepath}")
 
 global clip
+global audio
 
 try:
     clip = core.bs.VideoSource(
@@ -61,9 +69,15 @@ try:
             cachepath=cachepath,
             showprogress=False
             )
+    
+    audio = core.bs.AudioSource(
+            source=arguments["input_file"]
+            )
+
     logger.debug(f"Loaded input video: {arguments['input_file']}")
 except Exception as e:
     logger.error(f"Failed to load input video: {e}")
+    exit(1)
 
 if recipe["miscellaneous"]["dedup_threshold"] > 0.0:
     import filldrops
@@ -126,3 +140,4 @@ elif not isinstance(clip, vs.VideoNode):
     logger.error("Clip is not a valid VideoNode.")
 
 clip.set_output()
+audio.set_output()
