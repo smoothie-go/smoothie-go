@@ -33,16 +33,6 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
     - [ ] Masking
   - [ ] ~~User provided vpy~~ *Not going to be implemented*
 
-- [ ] **Server**
-  - [ ] oauth
-    - [ ] Discord
-  - [ ] Auth
-    - [ ] Basic access token
-  - [ ] `smoothie-go server --authless`
-  - [ ] /render
-  - [ ] /config
-  - [ ] /status
-
 - [ ] **Web-UI**
   - [ ] Status page
   - [ ] Login page
