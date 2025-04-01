@@ -5,17 +5,44 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sync"
 
 	"github.com/smoothie-go/smoothie-go/cli"
 	"github.com/smoothie-go/smoothie-go/cmd"
 	"github.com/smoothie-go/smoothie-go/recipe"
+	"github.com/smoothie-go/smoothie-go/temp"
 )
 
+type procResult struct {
+	cmd *exec.Cmd
+	err error
+}
+
 func Render(args *cli.Arguments, rc *recipe.Recipe) {
+	if err := temp.InitTemp(args); err != nil {
+		log.Panicln(err.Error())
+	}
+
+	audioTracks, err := temp.Join("audiotracks.mka")
+	if err != nil {
+		log.Panicln(err.Error())
+	}
+	extractAudio := cmd.ExtractAudioCommandBuilder(args, rc, audioTracks)
+
+	extractAudioCmd := exec.Command(extractAudio[0], extractAudio[1:]...)
+	extractAudioCmd.Stderr = os.Stderr
+	extractAudioCmd.Stdout = os.Stdout
+	if err := extractAudioCmd.Run(); err != nil {
+		log.Panicf("Extract audio failed: %v", err)
+	}
+
+	if err := temp.RegisterTempFile("audiotracks.mka"); err != nil {
+		log.Panicln(err.Error())
+	}
+
 	vspipe, ffmpeg, ffplay := cmd.VspipeCommandBuilder(args, rc)
 	vspipeCmd := exec.Command(vspipe[0], vspipe[1:]...)
 	ffmpegCmd := exec.Command(ffmpeg[0], ffmpeg[1:]...)
-
 	vspipeCmd.Stderr = os.Stderr
 	ffmpegCmd.Stderr = os.Stderr
 
@@ -36,7 +63,6 @@ func Render(args *cli.Arguments, rc *recipe.Recipe) {
 	}
 
 	pipeReader1, pipeWriter1 := io.Pipe()
-
 	go func() {
 		defer pipeWriter1.Close()
 		if rc.PreviewWindow.Enabled {
@@ -54,31 +80,47 @@ func Render(args *cli.Arguments, rc *recipe.Recipe) {
 
 	ffmpegCmd.Stdin = pipeReader1
 
-	if err := vspipeCmd.Start(); err != nil {
-		log.Fatalf("Failed to start vspipe command: %v", err)
-	}
-
-	if err := ffmpegCmd.Start(); err != nil {
-		log.Fatalf("Failed to start ffmpeg command: %v", err)
-	}
-
+	commands := []*exec.Cmd{vspipeCmd, ffmpegCmd}
 	if rc.PreviewWindow.Enabled {
-		if err := ffplayCmd.Start(); err != nil {
-			log.Fatalf("Failed to start ffplay command: %v", err)
+		commands = append(commands, ffplayCmd)
+	}
+
+	for _, c := range commands {
+		if err := c.Start(); err != nil {
+			log.Panicf("Failed to start %s: %v", c.Path, err)
 		}
 	}
 
-	if err := ffmpegCmd.Wait(); err != nil {
-		log.Fatalf("ffmpeg command finished with error: %v", err)
+	resCh := make(chan procResult, len(commands))
+	var wg sync.WaitGroup
+	wg.Add(len(commands))
+
+	for _, c := range commands {
+		go func(cmd *exec.Cmd) {
+			defer wg.Done()
+			err := cmd.Wait()
+			resCh <- procResult{cmd: cmd, err: err}
+		}(c)
 	}
 
-	if rc.PreviewWindow.Enabled {
-		if err := ffplayCmd.Process.Kill(); err != nil {
-			log.Printf("Failed to kill ffplay process: %v", err)
+	killEverything := false
+	var procErr procResult
+	for i := 0; i < len(commands); i++ {
+		procErr = <-resCh
+		if procErr.cmd == ffmpegCmd || procErr.err != nil {
+			killEverything = true
+			break
 		}
 	}
 
-	if err := vspipeCmd.Wait(); err != nil {
-		log.Fatalf("vspipe command finished with error: %v", err)
+	// kill everything if ffmpeg is dead or if theres error
+	if killEverything {
+		for _, c := range commands {
+			if c.Process != nil {
+				c.Process.Kill()
+			}
+		}
 	}
+
+	wg.Wait()
 }

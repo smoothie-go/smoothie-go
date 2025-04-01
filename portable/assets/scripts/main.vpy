@@ -49,7 +49,7 @@ verbose: bool = arguments["verbose"]
 if verbose:
     file_handler.setLevel(logging.DEBUG)
 else:
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(logging.WARN)
 # load input video
 
 arguments["out_dir"] = arguments["out_dir"].replace('\\','/')
@@ -60,7 +60,6 @@ cachepath: str = arguments["out_dir"] +"/"+ arguments["input_file"].split("/")[-
 logger.debug(f"Cache path: {cachepath}")
 
 global clip
-global audio
 
 try:
     clip = core.bs.VideoSource(
@@ -70,10 +69,6 @@ try:
             showprogress=False
             )
     
-    audio = core.bs.AudioSource(
-            source=arguments["input_file"]
-            )
-
     logger.debug(f"Loaded input video: {arguments['input_file']}")
 except Exception as e:
     logger.error(f"Failed to load input video: {e}")
@@ -140,4 +135,3 @@ elif not isinstance(clip, vs.VideoNode):
     logger.error("Clip is not a valid VideoNode.")
 
 clip.set_output()
-audio.set_output()

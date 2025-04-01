@@ -64,7 +64,7 @@ func Parse(args *cli.Arguments, recipe *rc.Recipe) {
 	} else if weightingStr == "gaussian" {
 		args.Weighting, _ = Gaussian(actualWeights, 0, 1, [2]float64{-1, 1})
 		return
-	} else if weightingStr == "gaussiansym" {
+	} else if weightingStr == "gaussian_sym" {
 		args.Weighting, _ = GaussianSym(actualWeights, 1, [2]float64{-1, 1})
 		return
 	} else if weightingStr == "vegas" {

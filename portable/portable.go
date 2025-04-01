@@ -3,10 +3,12 @@ package portable
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strconv"
 
 	"github.com/smoothie-go/smoothie-go/migrate"
 )
@@ -212,4 +214,8 @@ func GetLogPath() string {
 		}
 	}
 	return logPath
+}
+
+func GetTempPath(inputFile string) string {
+	return filepath.Join(os.TempDir(), inputFile+strconv.Itoa(rand.Intn(10000000000)))
 }
