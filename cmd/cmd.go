@@ -25,14 +25,14 @@ func ExtractAudioCommandBuilder(args *cli.Arguments, rc *recipe.Recipe, outfile 
 	tempoStr := fmt.Sprintf(`[0:a]atempo=%f`, tempo)
 	extAudioCmd := []string{
 		ffmpeg, "-loglevel", "error", "-i", args.InputFile, "-filter_complex",
-		tempoStr, "-map", "0:a", "-c:a", "flac",
+		tempoStr, "-map", "0:a?", "-c:a", "flac",
 		"-compression_level", "0", outfile,
 	}
 
 	return extAudioCmd
 }
 
-func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe) ([]string, []string, []string) {
+func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe, hasAudioTracks bool) ([]string, []string, []string) {
 	//look for Vspipe
 	vspipe := portable.GetBinaryInPathOrBinPath("vspipe")
 	if vspipe == "" {
@@ -68,13 +68,14 @@ func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe) ([]string, []s
 	encArgs := strings.Split(rc.Output.EncArgs, " ")
 	ffArgs := strings.Split(rc.Miscellaneous.FfmpegOptions, " ")
 	ffplayArgs := strings.Split(rc.Miscellaneous.FfplayOptions, " ")
-
-	audioTracks, err := temp.Join("audiotracks.mka")
-	if err != nil {
-		log.Panicf("Unable to get Audio Tracks: %v\n", err)
+	ffmpegCmd := []string{ffmpeg}
+	if hasAudioTracks {
+		audioTracks, err := temp.Join("audiotracks.mka")
+		if err != nil {
+			log.Panicf("Unable to get Audio Tracks: %v\n", err)
+		}
+		ffmpegCmd = append(ffmpegCmd, "i", audioTracks)
 	}
-
-	ffmpegCmd := []string{ffmpeg, "-i", audioTracks}
 
 	tScale := math.Pow(float64(rc.Timescale.Out/rc.Timescale.In), -1)
 	tScaleFilter := fmt.Sprintf("setpts=%f*PTS", tScale)

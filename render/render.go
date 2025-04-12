@@ -9,6 +9,7 @@ import (
 
 	"github.com/smoothie-go/smoothie-go/cli"
 	"github.com/smoothie-go/smoothie-go/cmd"
+	"github.com/smoothie-go/smoothie-go/portable"
 	"github.com/smoothie-go/smoothie-go/recipe"
 	"github.com/smoothie-go/smoothie-go/temp"
 )
@@ -16,6 +17,23 @@ import (
 type procResult struct {
 	cmd *exec.Cmd
 	err error
+}
+
+func hasAudioStream(input string) bool {
+	ffprobe := portable.GetBinaryInPathOrBinPath("ffprobe")
+	if ffprobe == "" {
+		log.Panicln("FFprobe not found")
+	}
+
+	cmd := exec.Command(ffprobe, "-v", "error", "-select_streams", "a", "-show_entries",
+		"stream=index", "-of", "csv=p=0", input)
+	output, err := cmd.Output()
+	if err != nil {
+		log.Printf("Failed to probe audio streams: %v", err)
+		return false
+	}
+
+	return len(output) > 0
 }
 
 func Render(args *cli.Arguments, rc *recipe.Recipe) {
@@ -27,20 +45,24 @@ func Render(args *cli.Arguments, rc *recipe.Recipe) {
 	if err != nil {
 		log.Panicln(err.Error())
 	}
-	extractAudio := cmd.ExtractAudioCommandBuilder(args, rc, audioTracks)
 
-	extractAudioCmd := exec.Command(extractAudio[0], extractAudio[1:]...)
-	extractAudioCmd.Stderr = os.Stderr
-	extractAudioCmd.Stdout = os.Stdout
-	if err := extractAudioCmd.Run(); err != nil {
-		log.Panicf("Extract audio failed: %v", err)
+	hasAudioTracks := hasAudioStream(args.InputFile)
+	if hasAudioTracks {
+		extractAudio := cmd.ExtractAudioCommandBuilder(args, rc, audioTracks)
+
+		extractAudioCmd := exec.Command(extractAudio[0], extractAudio[1:]...)
+		extractAudioCmd.Stderr = os.Stderr
+		extractAudioCmd.Stdout = os.Stdout
+		if err := extractAudioCmd.Run(); err != nil {
+			log.Panicf("Extract audio failed: %v", err)
+		}
+
+		if err := temp.RegisterTempFile("audiotracks.mka"); err != nil {
+			log.Panicln(err.Error())
+		}
 	}
 
-	if err := temp.RegisterTempFile("audiotracks.mka"); err != nil {
-		log.Panicln(err.Error())
-	}
-
-	vspipe, ffmpeg, ffplay := cmd.VspipeCommandBuilder(args, rc)
+	vspipe, ffmpeg, ffplay := cmd.VspipeCommandBuilder(args, rc, hasAudioTracks)
 	vspipeCmd := exec.Command(vspipe[0], vspipe[1:]...)
 	ffmpegCmd := exec.Command(ffmpeg[0], ffmpeg[1:]...)
 	vspipeCmd.Stderr = os.Stderr
