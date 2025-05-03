@@ -74,7 +74,7 @@ func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe, hasAudioTracks
 		if err != nil {
 			log.Panicf("Unable to get Audio Tracks: %v\n", err)
 		}
-		ffmpegCmd = append(ffmpegCmd, "i", audioTracks)
+		ffmpegCmd = append(ffmpegCmd, "-i", audioTracks)
 	}
 
 	tScale := math.Pow(float64(rc.Timescale.Out/rc.Timescale.In), -1)
