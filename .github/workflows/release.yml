@@ -8,14 +8,14 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.24'
 
       - name: Build
         run: go build -v ./...
@@ -26,11 +26,13 @@ jobs:
   release:
     needs: build-and-test
     if: github.ref == 'refs/heads/master'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       release_type: ${{ steps.set_release_type.outputs.release_type }}
-      version: ${{ steps.set_release_type.outputs.version }}
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      version:      ${{ steps.set_release_type.outputs.version }}
+      upload_url:   ${{ steps.create_release.outputs.upload_url }}
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -47,16 +49,17 @@ jobs:
           sha="${{ steps.commit_info.outputs.sha }}"
           if [[ "$msg" == "[MAJOR]"* ]]; then
             echo "release_type=release" >> $GITHUB_OUTPUT
-            echo "version=major-$sha" >> $GITHUB_OUTPUT
+            echo "version=major-$sha"      >> $GITHUB_OUTPUT
           elif [[ "$msg" == "[MINOR]"* ]]; then
             echo "release_type=release" >> $GITHUB_OUTPUT
-            echo "version=minor-$sha" >> $GITHUB_OUTPUT
+            echo "version=minor-$sha"      >> $GITHUB_OUTPUT
           elif [[ "$msg" == "[PRE]"* ]]; then
             echo "release_type=prerelease" >> $GITHUB_OUTPUT
-            echo "version=pre-$sha" >> $GITHUB_OUTPUT
+            echo "version=pre-$sha"         >> $GITHUB_OUTPUT
           else
             echo "release_type=none" >> $GITHUB_OUTPUT
-            echo "version=none" >> $GITHUB_OUTPUT
+            echo "version=none"      >> $GITHUB_OUTPUT
+          fi
 
       - name: Create GitHub Release
         id: create_release
@@ -65,62 +68,71 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ steps.set_release_type.outputs.version }}
+          tag_name:     ${{ steps.set_release_type.outputs.version }}
           release_name: ${{ steps.set_release_type.outputs.version }}
-          draft: false
-          prerelease: ${{ steps.set_release_type.outputs.release_type == 'prerelease' }}
+          draft:        false
+          prerelease:   ${{ steps.set_release_type.outputs.release_type == 'prerelease' }}
 
   build-artifacts:
     needs: release
     if: needs.release.outputs.release_type != 'none'
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os:   [ubuntu-22.04, macos-latest, windows-latest]
         arch: [amd64, arm64]
     runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.20'
+          go-version: '1.24'
 
       - name: Set environment variables
+        # force all matrix runs (including Windows) to use Bash
+        shell: bash
         id: env_vars
         run: |
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             echo "GOOS=windows" >> $GITHUB_ENV
-            echo "EXT=zip" >> $GITHUB_ENV
+            echo "EXT=zip"     >> $GITHUB_ENV
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            echo "GOOS=darwin" >> $GITHUB_ENV
-            echo "EXT=tar.gz" >> $GITHUB_ENV
+            echo "GOOS=darwin"  >> $GITHUB_ENV
+            echo "EXT=tar.gz"   >> $GITHUB_ENV
           else
-            echo "GOOS=linux" >> $GITHUB_ENV
-            echo "EXT=tar.gz" >> $GITHUB_ENV
+            echo "GOOS=linux"   >> $GITHUB_ENV
+            echo "EXT=tar.gz"   >> $GITHUB_ENV
           fi
           echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: Build binary
+        shell: bash
         run: |
           mkdir -p build
           go build -o build/smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }} .
 
       - name: Package artifact
+        shell: bash
         run: |
           cd build
+          ARCHIVED_NAME="smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}.${{ env.EXT }}"
           if [[ "${{ env.EXT }}" == "zip" ]]; then
-            zip smoothie-go-${{ env.GOOS }}.${{ env.EXT }} smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}
+            zip "${ARCHIVED_NAME}" "smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}"
           else
-            tar -czf smoothie-go-${{ env.GOOS }}.${{ env.EXT }} smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}
+            tar -czf "${ARCHIVED_NAME}" "smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}"
           fi
+          echo "ARCHIVED_NAME=$ARCHIVED_NAME" >> $GITHUB_ENV
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: build/smoothie-go-${{ env.GOOS }}.${{ env.EXT }}
-          asset_name: smoothie-go-${{ env.GOOS }}.${{ env.EXT }}
+          upload_url:        ${{ needs.release.outputs.upload_url }}
+          asset_path:        build/${{ env.ARCHIVED_NAME }}
+          asset_name:        ${{ env.ARCHIVED_NAME }}
           asset_content_type: application/octet-stream
+

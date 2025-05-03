@@ -1,6 +1,6 @@
 module github.com/smoothie-go/smoothie-go
 
-go 1.18
+go 1.22
 
 require (
 	gopkg.in/ini.v1 v1.67.0
