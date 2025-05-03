@@ -34,7 +34,10 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout with tags
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # get all history & tags
 
       - name: Extract commit info
         id: commit_info
@@ -42,24 +45,45 @@ jobs:
           echo "message=$(git log -1 --pretty=%s)" >> $GITHUB_OUTPUT
           echo "sha=$(git rev-parse --short=8 HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Set release type and version
+      - name: Determine next version
         id: set_release_type
         run: |
+          # get latest non-prerelease semver tag, or default to 0.0.0
+          latest=$(git describe --tags --match "[0-9]*.[0-9]*.[0-9]*" --abbrev=0 2>/dev/null || echo "0.0.0")
+          echo "Found latest tag: $latest"
+
+          IFS='.' read -r major minor patch <<< "$latest"
           msg="${{ steps.commit_info.outputs.message }}"
           sha="${{ steps.commit_info.outputs.sha }}"
-          if [[ "$msg" == "[MAJOR]"* ]]; then
-            echo "release_type=release" >> $GITHUB_OUTPUT
-            echo "version=major-$sha"      >> $GITHUB_OUTPUT
-          elif [[ "$msg" == "[MINOR]"* ]]; then
-            echo "release_type=release" >> $GITHUB_OUTPUT
-            echo "version=minor-$sha"      >> $GITHUB_OUTPUT
-          elif [[ "$msg" == "[PRE]"* ]]; then
-            echo "release_type=prerelease" >> $GITHUB_OUTPUT
-            echo "version=pre-$sha"         >> $GITHUB_OUTPUT
-          else
-            echo "release_type=none" >> $GITHUB_OUTPUT
-            echo "version=none"      >> $GITHUB_OUTPUT
-          fi
+
+          case "$msg" in
+            \[MAJOR\]*)
+              ((major++)); minor=0; patch=0
+              type=release
+              version="${major}.${minor}.${patch}"
+              ;;
+            \[MINOR\]*)
+              ((minor++)); patch=0
+              type=release
+              version="${major}.${minor}.${patch}"
+              ;;
+            \[PATCH\]*)
+              ((patch++))
+              type=release
+              version="${major}.${minor}.${patch}"
+              ;;
+            \[PRE\]*)
+              type=prerelease
+              version="${major}.${minor}.${patch}-pre-${sha}"
+              ;;
+            *)
+              type=none
+              version="none"
+              ;;
+          esac
+
+          echo "release_type=$type" >> $GITHUB_OUTPUT
+          echo "version=$version"    >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         id: create_release
@@ -92,7 +116,6 @@ jobs:
           go-version: '1.24'
 
       - name: Set environment variables
-        # force all matrix runs (including Windows) to use Bash
         shell: bash
         id: env_vars
         run: |
@@ -100,11 +123,11 @@ jobs:
             echo "GOOS=windows" >> $GITHUB_ENV
             echo "EXT=zip"     >> $GITHUB_ENV
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            echo "GOOS=darwin"  >> $GITHUB_ENV
-            echo "EXT=tar.gz"   >> $GITHUB_ENV
+            echo "GOOS=darwin" >> $GITHUB_ENV
+            echo "EXT=tar.gz"  >> $GITHUB_ENV
           else
-            echo "GOOS=linux"   >> $GITHUB_ENV
-            echo "EXT=tar.gz"   >> $GITHUB_ENV
+            echo "GOOS=linux"  >> $GITHUB_ENV
+            echo "EXT=tar.gz"  >> $GITHUB_ENV
           fi
           echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
 
@@ -119,11 +142,17 @@ jobs:
         run: |
           cd build
           ARCHIVED_NAME="smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}.${{ env.EXT }}"
-          if [[ "${{ env.EXT }}" == "zip" ]]; then
-            zip "${ARCHIVED_NAME}" "smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}"
+
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            pwsh -Command "Compress-Archive -Path 'smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}' -DestinationPath '${ARCHIVED_NAME}'"
           else
-            tar -czf "${ARCHIVED_NAME}" "smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}"
+            if [[ "${{ env.EXT }}" == "zip" ]]; then
+              zip "${ARCHIVED_NAME}" "smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}"
+            else
+              tar -czf "${ARCHIVED_NAME}" "smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}"
+            fi
           fi
+
           echo "ARCHIVED_NAME=$ARCHIVED_NAME" >> $GITHUB_ENV
 
       - name: Upload Release Asset
@@ -135,4 +164,3 @@ jobs:
           asset_path:        build/${{ env.ARCHIVED_NAME }}
           asset_name:        ${{ env.ARCHIVED_NAME }}
           asset_content_type: application/octet-stream
-
