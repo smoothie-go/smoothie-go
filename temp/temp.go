@@ -2,7 +2,6 @@ package temp
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -12,8 +11,8 @@ import (
 )
 
 var (
-	tempFiles     []string
-	tempDirectory string = ""
+	tempFiles     []string = nil
+	tempDirectory string   = ""
 )
 
 func InitTemp(args *cli.Arguments) error {
@@ -47,10 +46,8 @@ func RegisterTempFile(fileName string) error {
 }
 
 func DeleteTempFiles() error {
-	if tempDirectory == "" || len(tempFiles) == 0 {
-		fmt.Println(tempDirectory)
-		fmt.Println(tempFiles)
-		return errors.New("No temp directory or no tempFiles")
+	if tempDirectory == "" || tempFiles == nil || len(tempFiles) == 0 {
+		return errors.New("No temp directory or no temp files")
 	}
 
 	for _, file := range tempFiles {

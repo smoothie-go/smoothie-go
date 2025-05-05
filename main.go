@@ -20,10 +20,7 @@ func main() {
 	render.Render(args, rc)
 
 	err := temp.DeleteTempFiles()
-	if err.Error() == "No temp directory or no tempFiles" {
-		return
-	}
 	if err != nil {
-		log.Panicln(err.Error())
+		log.Fatal(err)
 	}
 }
