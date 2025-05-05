@@ -2,6 +2,9 @@ package cli
 
 import (
 	"log"
+	"os"
+
+	"github.com/smoothie-go/smoothie-go/portable"
 )
 
 func parseArgs(args []string) *Arguments {
@@ -42,6 +45,17 @@ func parseArgs(args []string) *Arguments {
 				log.Fatal("You must provide a recipe name")
 			}
 			arguments.RecipePath = args[i+1]
+			i++
+		case "--dump-scripts", "-ds":
+			if i == len(args)-1 {
+				log.Fatal("You must provide a directory")
+			}
+			err := portable.DropScriptsAtPath(args[i+1])
+			if err != nil {
+				log.Fatal("Unable to drop scripts at " + args[i+1] + "\nError: " + err.Error())
+			}
+			log.Println("Ok!")
+			os.Exit(0)
 			i++
 		}
 	}

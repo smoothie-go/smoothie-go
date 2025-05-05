@@ -181,22 +181,22 @@ func GetDefaultTtaModelPath() string {
 	return filepath.Join(GetModelsPath(), "rife-v3.1/")
 }
 
-func DropScriptsAtPath(path string) {
+func DropScriptsAtPath(path string) error {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		os.MkdirAll(path, 0755)
 	}
-	writeEmbeddedFiles(scripts, path, "assets/scripts")
+	err := writeEmbeddedFiles(scripts, path, "assets/scripts")
+	return err
 }
 
 func GetMainVpyPath() string {
 	var path string
-	if IsPortable() {
-		path = filepath.Join(GetExecutableDirectory(), "scripts", "main.vpy")
-	} else {
-		path = filepath.Join(GetLocalDirectory(), "scripts", "main.vpy")
-	}
+	path = filepath.Join(GetExecutableDirectory(), "scripts", "main.vpy")
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		DropScriptsAtPath(filepath.Dir(path))
+		err := DropScriptsAtPath(filepath.Dir(path))
+		if err != nil {
+			log.Fatal("Unable to drop vapoursynth scripts at " + filepath.Dir(path))
+		}
 	}
 
 	return path
