@@ -4,7 +4,7 @@ import (
 	"embed"
 	"log"
 	"os"
-	"path/filepath"
+	"path"
 )
 
 //go:embed assets/recipe.ini
@@ -30,8 +30,8 @@ func writeEmbeddedFiles(embedFS embed.FS, targetDir string, embedPath string) er
 	}
 
 	for _, entry := range entries {
-		fullEmbedPath := filepath.Join(embedPath, entry.Name())
-		fullTargetPath := filepath.Join(targetDir, entry.Name())
+		fullEmbedPath := path.Join(embedPath, entry.Name())
+		fullTargetPath := path.Join(targetDir, entry.Name())
 
 		if entry.IsDir() {
 			err := os.MkdirAll(fullTargetPath, os.ModePerm)
