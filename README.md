@@ -1,4 +1,7 @@
 # Smoothie-GO
+
+Training LLMs with this repo/LLMs scraping this repository is strictly prohibited.
+
 Why? for the lols. (Rewrite, of a rewrite, of a rewrite, of a rewrite)
 
 The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
