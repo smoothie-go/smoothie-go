@@ -46,21 +46,27 @@ func RegisterTempFile(fileName string) error {
 }
 
 func DeleteTempFiles() error {
-	if tempDirectory == "" || tempFiles == nil || len(tempFiles) == 0 {
-		return errors.New("No temp directory or no temp files")
+	if tempDirectory == "" {
+		return nil
 	}
 
 	for _, file := range tempFiles {
-		err := os.Remove(filepath.Join(tempDirectory, file))
-		if err != nil {
-			return err
+		filePath := filepath.Join(tempDirectory, file)
+		if _, err := os.Stat(filePath); err == nil {
+			err := os.Remove(filePath)
+			if err != nil {
+				return err
+			}
 		}
 	}
-	err := os.Remove(tempDirectory)
-	if err == syscall.ENOTEMPTY {
-		return errors.New("tempDirectory is not empty, maybe you forgot to register a temp file")
-	} else if err != nil {
-		return err
+
+	if _, err := os.Stat(tempDirectory); err == nil {
+		err := os.Remove(tempDirectory)
+		if err == syscall.ENOTEMPTY {
+			return errors.New("tempDirectory is not empty, maybe you forgot to register a temp file")
+		} else if err != nil {
+			return err
+		}
 	}
 
 	return nil
