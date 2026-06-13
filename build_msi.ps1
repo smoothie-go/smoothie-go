@@ -22,6 +22,14 @@ $DlDir = Join-Path $PSScriptRoot "build_downloads"
 $TmpDir = Join-Path $PSScriptRoot "build_temp"
 $LayoutDir = Join-Path $TmpDir "layout"
 
+# Clean up any leftover directories from previous runs
+if ($TmpDir -and (Test-Path $TmpDir) -and ($TmpDir -like "*build_temp*")) {
+    Remove-Item -Path $TmpDir -Recurse -Force
+}
+if ($DlDir -and (Test-Path $DlDir) -and ($DlDir -like "*build_downloads*")) {
+    Remove-Item -Path $DlDir -Recurse -Force
+}
+
 New-Item -ItemType Directory -Force -Path $DlDir, $TmpDir, $LayoutDir | Out-Null
 
 try {
@@ -42,16 +50,23 @@ try {
     Copy-Item -Path $LocalBinary -Destination (Join-Path $LayoutDir "smoothie-go.exe") -Force
 }
 
-$FfmpegUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-win64-gpl-7.1.zip"
+$Headers = @{}
+if ($env:GITHUB_TOKEN) {
+    $Headers["Authorization"] = "Bearer $env:GITHUB_TOKEN"
+}
+$FfmpegJson = Invoke-RestMethod -Uri "https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest" -Headers $Headers -UseBasicParsing
+$FfmpegAsset = $FfmpegJson.assets | Where-Object { $_.name -like "ffmpeg-n7.1*-win64-gpl-7.1.zip" } | Select-Object -First 1
+$FfmpegUrl = $FfmpegAsset.browser_download_url
 $FfmpegZip = Join-Path $DlDir "ffmpeg.zip"
 if (-not (Test-Path $FfmpegZip) -or (Get-Item $FfmpegZip).Length -lt 10MB) {
     Invoke-WebRequest -Uri $FfmpegUrl -OutFile $FfmpegZip -UseBasicParsing
 }
 Expand-Archive -Path $FfmpegZip -DestinationPath (Join-Path $TmpDir "ffmpeg") -Force
-$Ffbin = Join-Path $TmpDir "ffmpeg\ffmpeg-n7.1-latest-win64-gpl-7.1\bin"
-Copy-Item -Path (Join-Path $Ffbin "ffmpeg.exe") -Destination $LayoutDir -Force
-Copy-Item -Path (Join-Path $Ffbin "ffplay.exe") -Destination $LayoutDir -Force
-Copy-Item -Path (Join-Path $Ffbin "ffprobe.exe") -Destination $LayoutDir -Force
+$Ffbin = Get-ChildItem -Path (Join-Path $TmpDir "ffmpeg") -Directory | Select-Object -First 1
+$FfbinPath = Join-Path $Ffbin.FullName "bin"
+Copy-Item -Path (Join-Path $FfbinPath "ffmpeg.exe") -Destination $LayoutDir -Force
+Copy-Item -Path (Join-Path $FfbinPath "ffplay.exe") -Destination $LayoutDir -Force
+Copy-Item -Path (Join-Path $FfbinPath "ffprobe.exe") -Destination $LayoutDir -Force
 
 $VsUrl = "https://github.com/smoothie-go/VSBundler/releases/download/Nightly_2025.08.14_02-55/VapourSynth.zip"
 $VsZip = Join-Path $DlDir "VapourSynth.zip"
@@ -178,5 +193,8 @@ $DirectoryTreeXml        </Directory>
 finally {
     if ($TmpDir -and (Test-Path $TmpDir) -and ($TmpDir -like "*build_temp*")) {
         Remove-Item -Path $TmpDir -Recurse -Force
+    }
+    if ($DlDir -and (Test-Path $DlDir) -and ($DlDir -like "*build_downloads*")) {
+        Remove-Item -Path $DlDir -Recurse -Force
     }
 }

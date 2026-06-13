@@ -13,6 +13,7 @@ type Recipe struct {
 		Tuning    string `ini:"tuning" json:"tuning"`
 		Algorithm int    `ini:"algorithm" json:"algorithm"`
 		Gpu       bool   `ini:"use gpu" json:"use_gpu"`
+		GpuId     int    `ini:"gpu id" json:"gpu_id"`
 	} `ini:"interpolation" json:"interpolation"`
 
 	FrameBlending struct {

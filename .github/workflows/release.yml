@@ -119,6 +119,8 @@ jobs:
 
       - name: Build and Package Installer
         shell: bash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             go build -o smoothie-go.exe .

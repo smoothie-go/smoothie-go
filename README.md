@@ -33,19 +33,14 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
     - [x] Pre-Interp
     - [x] Blending
     - [ ] Flowblur
-    - [ ] Masking
+    - [x] Masking
   - [ ] ~~User provided vpy~~ *Not going to be implemented*
-
-- [ ] **Web-UI**
-  - [ ] Status page
-  - [ ] Login page
-  - [ ] Config page
 
 ### Recipe
 - [x] **interpolation**
   - [x] interpolation::enabled
   - [x] interpolation::type (SVP/OF)
-  - [ ] interpolation::masking
+  - [x] interpolation::masking
   - [x] interpolation::fps
   - [x] interpolation::speed
   - [x] interpolation::tuning
@@ -54,12 +49,12 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [x] interpolation::use_gpu
   - [ ] interpolation::area
 
-- [ ] **frame_blending**
+- [x] **frame_blending**
   - [x] frame_blending::enabled
   - [x] frame_blending::fps
   - [x] frame_blending::intensity
   - [x] frame_blending::weighting
-  - [ ] frame_blending::bright_blend
+  - [x] frame_blending::bright_blend
 
 - [ ] **flowblur**
   - [ ] flowblur::enabled
@@ -70,7 +65,7 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
 - [ ] **output**
   - [ ] output::process
   - [x] output::enc_args
-  - [ ] output::file_format
+  - [x] output::file_format
   - [x] output::container
 
 - [ ] **preview_window**
@@ -99,7 +94,7 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [ ] miscellaneous::play_ding
   - [x] miscellaneous::always_verbose
   - [x] miscellaneous::dedup_threshold
-  - [ ] miscellaneous::global_output_folder
+  - [x] miscellaneous::global_output_folder
   - [ ] miscellaneous::source_indexing
   - [x] miscellaneous::ffmpeg_options
   - [x] miscellaneous::ffplay_options
@@ -116,10 +111,10 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [x] color_grading::hue
   - [x] color_grading::coring
 
-- [ ] **lut**
-  - [ ] lut::enabled
-  - [ ] lut::path
-  - [ ] lut::opacity
+- [x] **lut**
+  - [x] lut::enabled
+  - [x] lut::path
+  - [x] lut::opacity
 
 - [x] **pre_interp**
   - [x] pre_interp::enabled
