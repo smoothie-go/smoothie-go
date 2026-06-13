@@ -18,12 +18,13 @@ func Parse(args *cli.Arguments, recipe *rc.Recipe) {
 		videoFps = recipe.Interpolation.Fps
 	} else if recipe.PreInterp.Enabled {
 		var factor int
-		fmt.Sscanf(recipe.PreInterp.Factor, "%d", &factor)
-
+		n, err := fmt.Sscanf(recipe.PreInterp.Factor, "%d", &factor)
+		if err != nil || n < 1 {
+			factor = 1
+		}
 		videoFps = args.InputFps * factor
 	} else {
 		videoFps = args.InputFps
-		log.Println(videoFps)
 	}
 
 	frameGap := videoFps / recipe.FrameBlending.Fps
@@ -37,14 +38,19 @@ func Parse(args *cli.Arguments, recipe *rc.Recipe) {
 			actualWeights++
 		}
 	}
-	weightingStr := strings.ToLower(recipe.FrameBlending.Weighting)
-	if recipe.FrameBlending.Weighting[0] == '[' && recipe.FrameBlending.Weighting[len(recipe.FrameBlending.Weighting)-1] == ']' {
-		weightingStrArray := strings.Split(weightingStr[1:len(recipe.FrameBlending.Weighting)-1], ",")
+	weightingStr := strings.TrimSpace(strings.ToLower(recipe.FrameBlending.Weighting))
+	if weightingStr == "" {
+		log.Println("WARNING: Empty weighting type. Defaulting to Equal")
+		args.Weighting = Equal(actualWeights)
+		return
+	}
+	if len(weightingStr) >= 2 && weightingStr[0] == '[' && weightingStr[len(weightingStr)-1] == ']' {
+		weightingStrArray := strings.Split(weightingStr[1:len(weightingStr)-1], ",")
 
 		mapping := make([]float64, len(weightingStrArray))
 
 		for i, v := range weightingStrArray {
-			mapping[i], _ = strconv.ParseFloat(v, 64)
+			mapping[i], _ = strconv.ParseFloat(strings.TrimSpace(v), 64)
 		}
 
 		args.Weighting = Divide(actualWeights, mapping)

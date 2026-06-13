@@ -3,6 +3,9 @@ package weighting
 import "math"
 
 func min(values []float64) float64 {
+	if len(values) == 0 {
+		return 0
+	}
 	minVal := values[0]
 	for _, v := range values {
 		if v < minVal {
@@ -13,6 +16,9 @@ func min(values []float64) float64 {
 }
 
 func Normalise(weights []float64) []float64 {
+	if len(weights) == 0 {
+		return weights
+	}
 	// Remove negative weights if wizardry is not enabled
 	if !wizardry {
 		minWeight := min(weights)
@@ -22,9 +28,12 @@ func Normalise(weights []float64) []float64 {
 			}
 		}
 	}
-	sum := sum(weights)
+	sumVal := sum(weights)
+	if sumVal == 0 {
+		return weights
+	}
 	for i := range weights {
-		weights[i] /= sum
+		weights[i] /= sumVal
 	}
 	return weights
 }
