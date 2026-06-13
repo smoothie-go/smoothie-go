@@ -12,5 +12,7 @@ type Arguments struct {
 	Verbose    bool      `json:"verbose"`
 	Weighting  []float64 `json:"weighting"`
 	CEP        bool      `json:"cep"`
+	UserSpecifiedOutput bool
+	UserSpecifiedOutDir bool
 	DevDump    bool
 }

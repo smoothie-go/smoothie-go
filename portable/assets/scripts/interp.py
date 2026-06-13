@@ -1,4 +1,6 @@
+# pyrefly: ignore [missing-import]
 import vapoursynth as vs
+# pyrefly: ignore [missing-import]
 from vapoursynth import core
 
 import havsfunc
@@ -25,6 +27,7 @@ def interp(clip: vs.VideoNode, args: dict, recipe: dict) -> vs.VideoNode:
             clip = havsfunc.InterFrame(
                     Input=clip,
                     GPU=recipe["interpolation"]["use_gpu"],
+                    gpuid=recipe["interpolation"]["gpu_id"],
                     Preset=recipe["interpolation"]["speed"],
                     Tuning=recipe["interpolation"]["tuning"],
                     NewNum=recipe["interpolation"]["fps"],

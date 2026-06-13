@@ -1,16 +1,19 @@
 package portable
 
 import (
+	"bytes"
 	"fmt"
 	"log"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/smoothie-go/smoothie-go/migrate"
+	"gopkg.in/ini.v1"
 )
 
 func GetExecutableDirectory() string {
@@ -82,6 +85,101 @@ func GetRecipePathCustom(name string) string {
 	return filepath.Join(GetConfigDirectory(), name)
 }
 
+func GetGPUs() []string {
+	var gpus []string
+	if runtime.GOOS == "windows" {
+		cmd := exec.Command("powershell", "-NoProfile", "-Command", "Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name")
+		output, err := cmd.Output()
+		if err == nil {
+			lines := strings.Split(string(output), "\n")
+			for _, line := range lines {
+				line = strings.TrimSpace(line)
+				if line != "" {
+					gpus = append(gpus, line)
+				}
+			}
+		}
+	} else if runtime.GOOS == "linux" {
+		cmd := exec.Command("sh", "-c", "lspci | grep -E -i 'vga|3d|display'")
+		output, err := cmd.Output()
+		if err == nil {
+			lines := strings.Split(string(output), "\n")
+			for _, line := range lines {
+				line = strings.TrimSpace(line)
+				if line != "" {
+					parts := strings.SplitN(line, ": ", 2)
+					if len(parts) > 1 {
+						gpus = append(gpus, parts[1])
+					} else {
+						gpus = append(gpus, line)
+					}
+				}
+			}
+		}
+	}
+	return gpus
+}
+
+func promptAndConfigureGPU(iniBytes []byte) []byte {
+	cfg, err := ini.Load(iniBytes)
+	if err != nil {
+		log.Println("Error parsing recipe: ", err)
+		return iniBytes
+	}
+
+	sec := cfg.Section("interpolation")
+
+	fmt.Println("\n=== Smoothie-go: GPU Configuration ===")
+	if IsOpenCLAvailable() {
+		fmt.Println("OpenCL was detected on your system. GPU acceleration is highly recommended!")
+	} else {
+		fmt.Println("Warning: OpenCL was not detected. GPU acceleration may fallback to CPU.")
+	}
+
+	fmt.Printf("Would you like to enable GPU acceleration? (y/n) [y]: ")
+	var input string
+	fmt.Scanln(&input)
+	input = strings.TrimSpace(strings.ToLower(input))
+	useGpu := true
+	if input == "n" || input == "no" {
+		useGpu = false
+	}
+
+	gpuId := 0
+	if useGpu {
+		gpus := GetGPUs()
+		if len(gpus) > 0 {
+			fmt.Println("\nDetected GPU(s):")
+			for i, gpu := range gpus {
+				fmt.Printf("  [%d] %s\n", i, gpu)
+			}
+			fmt.Println()
+		} else {
+			fmt.Println("\nNo GPUs automatically detected. Defaulting device ID to 0.")
+		}
+
+		fmt.Printf("Enter GPU ID to use [0]: ")
+		var idInput string
+		fmt.Scanln(&idInput)
+		idInput = strings.TrimSpace(idInput)
+		if idInput != "" {
+			if parsedId, err := strconv.Atoi(idInput); err == nil {
+				gpuId = parsedId
+			}
+		}
+	}
+
+	sec.Key("use gpu").SetValue(strconv.FormatBool(useGpu))
+	sec.Key("gpu id").SetValue(strconv.Itoa(gpuId))
+
+	var buf bytes.Buffer
+	if _, err := cfg.WriteTo(&buf); err != nil {
+		log.Println("Error writing recipe: ", err)
+		return iniBytes
+	}
+	return buf.Bytes()
+}
+
 func GetRecipePath() string {
 	recipePath := GetRecipePathCustom("recipe.ini")
 	if _, err := os.Stat(recipePath); os.IsNotExist(err) {
@@ -98,14 +196,28 @@ func GetRecipePath() string {
 					if err != nil {
 						log.Fatal(err)
 					}
-					dropFileAtPath(recipePath, []byte(rc))
+					rcBytes := promptAndConfigureGPU([]byte(rc))
+					dropFileAtPath(recipePath, rcBytes)
 					return recipePath
 				} else {
 					fmt.Println("Skipping migration...")
 				}
 			}
 		}
-		dropFileAtPath(recipePath, []byte(recipe_ini))
+		recipeBytes := promptAndConfigureGPU([]byte(recipe_ini))
+		dropFileAtPath(recipePath, recipeBytes)
+	} else {
+		cfg, err := ini.Load(recipePath)
+		if err == nil {
+			sec := cfg.Section("interpolation")
+			if !sec.HasKey("gpu id") {
+				data, err := os.ReadFile(recipePath)
+				if err == nil {
+					updatedData := promptAndConfigureGPU(data)
+					dropFileAtPath(recipePath, updatedData)
+				}
+			}
+		}
 	}
 	return recipePath
 }
@@ -217,5 +329,6 @@ func GetLogPath() string {
 }
 
 func GetTempPath(inputFile string) string {
-	return filepath.Join(os.TempDir(), inputFile+strconv.Itoa(rand.Intn(10000000000)))
+	base := strings.TrimSuffix(inputFile, filepath.Ext(inputFile))
+	return filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", base, rand.Uint64()))
 }

@@ -1,10 +1,10 @@
 //go:build windows
 
-package recipe
+package portable
 
 import "syscall"
 
-func isOpenCLAvailable() bool {
+func IsOpenCLAvailable() bool {
 	handle, err := syscall.LoadLibrary("OpenCL.dll")
 	if err == nil {
 		syscall.FreeLibrary(handle)

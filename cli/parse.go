@@ -27,12 +27,14 @@ func parseArgs(args []string) *Arguments {
 				log.Fatal("You must provide an output file")
 			}
 			arguments.OutputFile = args[i+1]
+			arguments.UserSpecifiedOutput = true
 			i++
 		case "--outdir", "-od":
 			if i == len(args)-1 {
 				log.Fatal("You must provide an output directory")
 			}
 			arguments.OutDir = args[i+1]
+			arguments.UserSpecifiedOutDir = true
 			i++
 		case "--encargs", "-e":
 			if i == len(args)-1 {

@@ -1,18 +1,15 @@
 package weighting
 
-import "math"
+import (
+	"math"
+	"slices"
+)
 
 func min(values []float64) float64 {
 	if len(values) == 0 {
 		return 0
 	}
-	minVal := values[0]
-	for _, v := range values {
-		if v < minVal {
-			minVal = v
-		}
-	}
-	return minVal
+	return slices.Min(values)
 }
 
 func Normalise(weights []float64) []float64 {

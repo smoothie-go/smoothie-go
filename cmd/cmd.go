@@ -217,6 +217,6 @@ func printVerboseConfig(args *cli.Arguments, rc *recipe.Recipe) {
 
 	fmt.Printf("%s %s %s %s%s%s\n", dim("├──"), bold("Output:"), green(rc.Output.Process), dim("("), yellow(rc.Output.Container), dim(")"))
 	fmt.Printf("%s Encoder Args: %s\n", dim("│   └──"), cyan(rc.Output.EncArgs))
-	fmt.Printf("%s %s Enabled=%s %s%s%s%s%s\n", dim("└──"), bold("Preview Window:"), purple(rc.PreviewWindow.Enabled), dim("(Process="), cyan(rc.PreviewWindow.Process), dim(", Args="), cyan(rc.PreviewWindow.OutputArgs), dim(")"))
+	fmt.Printf("%s %s Enabled=%s %s%s%s%s%s\n", dim("├──"), bold("Preview Window:"), purple(rc.PreviewWindow.Enabled), dim("(Process="), cyan(rc.PreviewWindow.Process), dim(", Args="), cyan(rc.PreviewWindow.OutputArgs), dim(")"))
 	fmt.Printf("%s\n", dim("└─────────────────────────────────────────────────────────────────────"))
 }
