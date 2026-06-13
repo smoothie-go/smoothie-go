@@ -43,7 +43,7 @@ func Validate(args *cli.Arguments, recipe *Recipe) *Recipe {
 	}
 
 	if recipe.Interpolation.Enabled && recipe.Interpolation.Gpu {
-		if !isOpenCLAvailable() {
+		if !portable.IsOpenCLAvailable() {
 			log.Println("WARNING: GPU interpolation is enabled, but OpenCL was not detected on your system. GPU acceleration may fail or fallback to CPU.")
 		}
 	}

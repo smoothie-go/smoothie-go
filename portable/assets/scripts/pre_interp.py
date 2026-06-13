@@ -30,19 +30,16 @@ def pre_interp(clip, args, recipe) -> vs.VideoNode:
     factor = recipe["pre_interp"]["factor"].strip('x')
 
     # masking (later)
-    try:
-        clip = core.rife.RIFE(
-                clip=clip,
-                factor_num=factor,
-                model_path=model_path,
-                gpu_id=0,
-                gpu_thread=1,
-                tta=recipe["pre_interp"]["tta"],
-                uhd=recipe["pre_interp"]["uhd"],
-                sc=recipe["pre_interp"]["scene_change"],
-                )
-    except Exception as e:
-        raise
+    clip = core.rife.RIFE(
+            clip=clip,
+            factor_num=factor,
+            model_path=model_path,
+            gpu_id=recipe["interpolation"]["gpu_id"],
+            gpu_thread=1,
+            tta=recipe["pre_interp"]["tta"],
+            uhd=recipe["pre_interp"]["uhd"],
+            sc=recipe["pre_interp"]["scene_change"],
+            )
         
     try:
         clip = core.resize.Bicubic(

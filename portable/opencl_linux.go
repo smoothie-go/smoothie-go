@@ -1,10 +1,10 @@
 //go:build linux
 
-package recipe
+package portable
 
 import "os"
 
-func isOpenCLAvailable() bool {
+func IsOpenCLAvailable() bool {
 	if files, err := os.ReadDir("/etc/OpenCL/vendors"); err == nil && len(files) > 0 {
 		return true
 	}
