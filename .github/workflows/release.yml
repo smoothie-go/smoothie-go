@@ -106,7 +106,6 @@ jobs:
     strategy:
       matrix:
         os:   [ubuntu-22.04, windows-latest]
-        arch: [amd64, arm64]
     runs-on: ${{ matrix.os }}
     permissions:
       contents: write
@@ -118,62 +117,20 @@ jobs:
         with:
           go-version: '1.25'
 
-      - name: Set environment variables
+      - name: Build and Package Installer
         shell: bash
-        id: env_vars
-        run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-            echo "GOOS=windows" >> $GITHUB_ENV
-            echo "EXT=zip"     >> $GITHUB_ENV
-          else
-            echo "GOOS=linux"  >> $GITHUB_ENV
-            echo "EXT=tar.gz"  >> $GITHUB_ENV
-          fi
-          echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
-
-      - name: Build and Package with Installers (Windows/Linux AMD64)
-        shell: bash
-        if: (matrix.os == 'windows-latest' || matrix.os == 'ubuntu-22.04') && matrix.arch == 'amd64'
         run: |
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             go build -o smoothie-go.exe .
-            pwsh ./build_msi.ps1 -LocalBinary smoothie-go.exe -Version "${{ needs.release.outputs.version }}" -OutFile "smoothie-go-setup-win-amd64.msi"
-            echo "ARCHIVED_NAME=smoothie-go-setup-win-amd64.msi" >> $GITHUB_ENV
-            echo "ASSET_PATH=smoothie-go-setup-win-amd64.msi" >> $GITHUB_ENV
+            pwsh ./build_msi.ps1 -LocalBinary smoothie-go.exe -Version "${{ needs.release.outputs.version }}" -OutFile "smoothie-go-setup.msi"
+            echo "ARCHIVED_NAME=smoothie-go-setup.msi" >> $GITHUB_ENV
+            echo "ASSET_PATH=smoothie-go-setup.msi" >> $GITHUB_ENV
           else
             chmod +x ./make_installer.sh
             ./make_installer.sh
-            mv smoothie-go-installer.run smoothie-go-installer-linux-amd64.run
-            echo "ARCHIVED_NAME=smoothie-go-installer-linux-amd64.run" >> $GITHUB_ENV
-            echo "ASSET_PATH=smoothie-go-installer-linux-amd64.run" >> $GITHUB_ENV
+            echo "ARCHIVED_NAME=smoothie-go-installer.run" >> $GITHUB_ENV
+            echo "ASSET_PATH=smoothie-go-installer.run" >> $GITHUB_ENV
           fi
-
-      - name: Build binary (Standard)
-        if: "!((matrix.os == 'windows-latest' || matrix.os == 'ubuntu-22.04') && matrix.arch == 'amd64')"
-        shell: bash
-        run: |
-          mkdir -p build
-          go build -o build/smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }} .
-
-      - name: Package artifact (Standard)
-        if: "!((matrix.os == 'windows-latest' || matrix.os == 'ubuntu-22.04') && matrix.arch == 'amd64')"
-        shell: bash
-        run: |
-          cd build
-          ARCHIVED_NAME="smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}.${{ env.EXT }}"
-
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            pwsh -Command "Compress-Archive -Path 'smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}' -DestinationPath '${ARCHIVED_NAME}'"
-          else
-            if [[ "${{ env.EXT }}" == "zip" ]]; then
-              zip "${ARCHIVED_NAME}" "smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}"
-            else
-              tar -czf "${ARCHIVED_NAME}" "smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }}"
-            fi
-          fi
-
-          echo "ARCHIVED_NAME=$ARCHIVED_NAME" >> $GITHUB_ENV
-          echo "ASSET_PATH=build/$ARCHIVED_NAME" >> $GITHUB_ENV
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1

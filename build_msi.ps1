@@ -5,6 +5,13 @@ param (
     [string]$Version = "1.0.0"
 )
 
+$ErrorActionPreference = "Stop"
+
+$OutFile = [System.IO.Path]::GetFullPath($OutFile)
+if (Test-Path $LocalBinary) {
+    $LocalBinary = [System.IO.Path]::GetFullPath($LocalBinary)
+}
+
 $DlDir = Join-Path $PSScriptRoot "build_downloads"
 $TmpDir = Join-Path $PSScriptRoot "build_temp"
 $LayoutDir = Join-Path $TmpDir "layout"
@@ -158,7 +165,9 @@ $DirectoryTreeXml        </Directory>
     }
 
     & $Candle $WxsPath -ext $WixUIExt -out (Join-Path $TmpDir "smoothie-go.wixobj")
+    if ($LASTEXITCODE -ne 0) { throw "candle failed with exit code $LASTEXITCODE" }
     & $Light (Join-Path $TmpDir "smoothie-go.wixobj") -ext $WixUIExt -out $OutFile -sval
+    if ($LASTEXITCODE -ne 0) { throw "light failed with exit code $LASTEXITCODE" }
 }
 finally {
     if ($TmpDir -and (Test-Path $TmpDir) -and ($TmpDir -like "*build_temp*")) {
