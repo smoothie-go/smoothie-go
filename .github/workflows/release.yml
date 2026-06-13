@@ -105,7 +105,7 @@ jobs:
     if: needs.release.outputs.release_type != 'none'
     strategy:
       matrix:
-        os:   [ubuntu-22.04, macos-latest, windows-latest]
+        os:   [ubuntu-22.04, windows-latest]
         arch: [amd64, arm64]
     runs-on: ${{ matrix.os }}
     permissions:
@@ -125,9 +125,6 @@ jobs:
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             echo "GOOS=windows" >> $GITHUB_ENV
             echo "EXT=zip"     >> $GITHUB_ENV
-          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-            echo "GOOS=darwin" >> $GITHUB_ENV
-            echo "EXT=tar.gz"  >> $GITHUB_ENV
           else
             echo "GOOS=linux"  >> $GITHUB_ENV
             echo "EXT=tar.gz"  >> $GITHUB_ENV
