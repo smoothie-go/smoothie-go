@@ -52,7 +52,7 @@ def ScaleLuminance (scale: bool, clip: vs.VideoNode):
         if scale: # up
             y = core.resize.Point(y, width=y.width * 2, height=y.height * 2)
         else: # down
-            y = core.resize.Point(y, width=y.width / 2, height=y.height / 2)
+            y = core.resize.Point(y, width=y.width // 2, height=y.height // 2)
     except Exception:
         raise
 

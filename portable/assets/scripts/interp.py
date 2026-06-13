@@ -16,7 +16,7 @@ def interp(clip: vs.VideoNode, args: dict, recipe: dict) -> vs.VideoNode:
         try:
             clip = utils.ScaleLuminance(True, clip)
         except Exception as e:
-            raise
+            raise e
     else:
         scaled = False
 
@@ -31,8 +31,8 @@ def interp(clip: vs.VideoNode, args: dict, recipe: dict) -> vs.VideoNode:
                     NewDen=1,
                     OverrideAlgo=recipe["interpolation"]["algorithm"],
                     )
-        except Exception:
-            raise
+        except Exception as e:
+            raise e
     elif recipe["interpolation"]["type"] == "of":
         # Tekno's code
         smooth_options = {

@@ -12,11 +12,5 @@ def FillDrops(clip, thresh=0.1):
     backwards_vectors = core.mv.Analyse(super, isb=True)
     filldrops = core.mv.FlowInter(clip, super, mvbw=backwards_vectors, mvfw=forward_vectors, ml=1)
     
-    def selectFunc(n, f):
-        if f.props['PlaneStatsDiff'] < thresh:
-            return filldrops
-        else:
-            return clip
-
-    fixed = core.std.FrameEval(clip, selectFunc, prop_src=differences)
+    fixed = core.std.ConditionalFilter(clip, filldrops, differences, "PlaneStatsDiff", "<", str(thresh))
     return fixed

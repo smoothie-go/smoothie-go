@@ -11,6 +11,9 @@ import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, script_dir)
 
+for mod in ['havsfunc', 'adjust', 'filldrops', 'frameblend', 'interp', 'masking', 'pre_interp', 'utils']:
+    sys.modules.pop(mod, None)
+
 logger = logging.getLogger("smoothie")
 console_handler = logging.StreamHandler()
 
@@ -70,6 +73,7 @@ try:
             )
     
     logger.debug(f"Loaded input video: {arguments['input_file']}")
+    original_video = clip
 except Exception as e:
     logger.error(f"Failed to load input video: {e}")
     exit(1)
@@ -83,6 +87,7 @@ if recipe["miscellaneous"]["dedup_threshold"] > 0.0:
             )
     
     logger.debug(f"Dedup threshold: {recipe['miscellaneous']['dedup_threshold']}")
+
 if recipe["color_grading"]["enabled"]:
     import adjust # colour grading
     clip = adjust.Tweak(
@@ -94,8 +99,9 @@ if recipe["color_grading"]["enabled"]:
             coring=recipe["color_grading"]["coring"]
             )
     logger.debug(f"Color grading: {recipe['color_grading']}")
+
 if recipe["pre_interp"]["enabled"]:
-    import pre_interp # pre_interp (RIFE)
+    import pre_interp
     logger.debug(f"RIFE model: {recipe['pre_interp']['model']}")
     try:
         clip = pre_interp.pre_interp(clip, arguments, recipe)
@@ -104,7 +110,7 @@ if recipe["pre_interp"]["enabled"]:
         exit(1)
 
 if recipe["interpolation"]["enabled"]:
-    import interp  # interp
+    import interp
     logger.debug(f"Interpolation: {recipe['interpolation']}")
     if clip.format.id in [vs.YUV444P8]:
         logger.warning("Slow interpolation due to YUV444P8 format")
@@ -128,6 +134,15 @@ if recipe["frame_blending"]["enabled"]:
         logger.error(f"Failed to apply frame blending: {e}")
         exit(1)
     logger.debug(f"Frame blending: successful")
+
+if recipe["artifact_masking"]["enabled"]:
+    import masking
+    try:
+        clip = masking.apply_mask(clip, original_video, recipe)
+        logger.debug(f"Artifact masking applied successfully")
+    except Exception as e:
+        logger.error(f"Failed to apply artifact masking: {e}")
+        exit(1)
 
 if clip is None:
     logger.error("Clip is None. Ensure all processing steps succeeded.")
