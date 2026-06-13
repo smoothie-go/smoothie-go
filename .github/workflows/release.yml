@@ -15,7 +15,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.24'
+          go-version: '1.25'
 
       - name: Build
         run: go build -v ./...
@@ -116,7 +116,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.24'
+          go-version: '1.25'
 
       - name: Set environment variables
         shell: bash
@@ -134,13 +134,32 @@ jobs:
           fi
           echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
 
-      - name: Build binary
+      - name: Build and Package with Installers (Windows/Linux AMD64)
+        shell: bash
+        if: (matrix.os == 'windows-latest' || matrix.os == 'ubuntu-22.04') && matrix.arch == 'amd64'
+        run: |
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            go build -o smoothie-go.exe .
+            pwsh ./build_msi.ps1 -LocalBinary smoothie-go.exe -Version "${{ needs.release.outputs.version }}" -OutFile "smoothie-go-setup-win-amd64.msi"
+            echo "ARCHIVED_NAME=smoothie-go-setup-win-amd64.msi" >> $GITHUB_ENV
+            echo "ASSET_PATH=smoothie-go-setup-win-amd64.msi" >> $GITHUB_ENV
+          else
+            chmod +x ./make_installer.sh
+            ./make_installer.sh
+            mv smoothie-go-installer.run smoothie-go-installer-linux-amd64.run
+            echo "ARCHIVED_NAME=smoothie-go-installer-linux-amd64.run" >> $GITHUB_ENV
+            echo "ASSET_PATH=smoothie-go-installer-linux-amd64.run" >> $GITHUB_ENV
+          fi
+
+      - name: Build binary (Standard)
+        if: "!((matrix.os == 'windows-latest' || matrix.os == 'ubuntu-22.04') && matrix.arch == 'amd64')"
         shell: bash
         run: |
           mkdir -p build
           go build -o build/smoothie-go-${{ env.GOOS }}-${{ env.GOARCH }} .
 
-      - name: Package artifact
+      - name: Package artifact (Standard)
+        if: "!((matrix.os == 'windows-latest' || matrix.os == 'ubuntu-22.04') && matrix.arch == 'amd64')"
         shell: bash
         run: |
           cd build
@@ -157,6 +176,7 @@ jobs:
           fi
 
           echo "ARCHIVED_NAME=$ARCHIVED_NAME" >> $GITHUB_ENV
+          echo "ASSET_PATH=build/$ARCHIVED_NAME" >> $GITHUB_ENV
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
@@ -164,6 +184,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url:        ${{ needs.release.outputs.upload_url }}
-          asset_path:        build/${{ env.ARCHIVED_NAME }}
+          asset_path:        ${{ env.ASSET_PATH }}
           asset_name:        ${{ env.ARCHIVED_NAME }}
           asset_content_type: application/octet-stream
+
