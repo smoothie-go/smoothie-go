@@ -20,7 +20,7 @@ func ParseEncodingArgs(iniFilePath, inputEncArgs string) (string, error) {
 		}
 		aliases := strings.Split(section.Name(), "/")
 		for _, alias := range aliases {
-			aliasToSection[alias] = section.Name()
+			aliasToSection[strings.ToUpper(strings.TrimSpace(alias))] = section.Name()
 		}
 	}
 
@@ -38,20 +38,22 @@ func ParseEncodingArgs(iniFilePath, inputEncArgs string) (string, error) {
 			result.WriteString(" ")
 		}
 
-		if macroValue := cfg.Section("MACROS").Key(word).String(); macroValue != "" {
+		upperWord := strings.ToUpper(word)
+
+		if macroValue := cfg.Section("MACROS").Key(upperWord).String(); macroValue != "" {
 			result.WriteString(macroValue)
 			continue
 		}
 
 		if codec == "" {
-			if sectionName, ok := codecOptions[word]; ok {
+			if sectionName, ok := codecOptions[upperWord]; ok {
 				codec = sectionName
 				continue
 			}
 		}
 
 		if codec != "" {
-			if presetValue := cfg.Section(codec).Key(strings.ToUpper(word)).String(); presetValue != "" {
+			if presetValue := cfg.Section(codec).Key(upperWord).String(); presetValue != "" {
 				result.WriteString(presetValue)
 				continue
 			}
