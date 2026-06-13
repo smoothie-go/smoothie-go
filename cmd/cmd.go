@@ -145,7 +145,7 @@ func printVerboseConfig(args *cli.Arguments, rc *recipe.Recipe) {
 	purple := color.New(color.FgMagenta).SprintFunc()
 	cyan := color.New(color.FgCyan).SprintFunc()
 
-	fmt.Printf("%s %s %s\n", dim("┌───"), cyanBold("SmoothieGo Config"), dim(" ───────────────────────────────────────────────"))
+	fmt.Printf("%s %s %s\n", dim("┌───"), cyanBold("smoothie-go Config"), dim(" ───────────────────────────────────────────────"))
 	fmt.Printf("%s %s %s %s%s%s\n", dim("│"), bold("Input File  :"), blue(args.InputFile), dim("("), yellow(fmt.Sprintf("%d FPS", args.InputFps)), dim(")"))
 	fmt.Printf("%s %s %s %s%s%s\n", dim("│"), bold("Output File :"), blue(args.OutputFile), dim("(Dir: "), yellow(args.OutDir), dim(")"))
 
