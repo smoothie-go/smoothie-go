@@ -5,6 +5,7 @@ import (
 	"github.com/smoothie-go/smoothie-go/fruits"
 	"github.com/smoothie-go/smoothie-go/portable"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"strings"
@@ -22,7 +23,7 @@ func ValidateArgs(args *Arguments) *Arguments {
 		log.Fatal(err)
 	}
 
-	args.InputFps = int(fps)
+	args.InputFps = int(math.Round(fps))
 
 	inputBaseName := filepath.Base(args.InputFile)
 	inputDirectory := filepath.Dir(args.InputFile)

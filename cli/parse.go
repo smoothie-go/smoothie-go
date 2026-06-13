@@ -14,14 +14,14 @@ func parseArgs(args []string) *Arguments {
 		switch arg {
 		case "--verbose", "-v":
 			arguments.Verbose = true
-			break
+		case "--code-execution-pipeline", "-cep":
+			arguments.CEP = true
 		case "--input", "-i":
 			if i == len(args)-1 {
 				log.Fatal("You must provide an input file")
 			}
 			arguments.InputFile = args[i+1]
 			i++
-			break
 		case "--output", "-o":
 			if i == len(args)-1 {
 				log.Fatal("You must provide an output file")
@@ -44,7 +44,7 @@ func parseArgs(args []string) *Arguments {
 			if i == len(args)-1 {
 				log.Fatal("You must provide a recipe name")
 			}
-			arguments.RecipePath = args[i+1]
+			arguments.RecipePath = args[i+1] + ".ini"
 			i++
 		case "--dump-scripts", "-ds":
 			if i == len(args)-1 {
@@ -56,7 +56,8 @@ func parseArgs(args []string) *Arguments {
 			}
 			log.Println("Ok!")
 			os.Exit(0)
-			i++
+		case "-__dev_dump":
+			arguments.DevDump = true
 		}
 	}
 	return &arguments

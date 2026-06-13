@@ -11,4 +11,6 @@ type Arguments struct {
 	LogFile    string    `json:"log_file"`
 	Verbose    bool      `json:"verbose"`
 	Weighting  []float64 `json:"weighting"`
+	CEP        bool      `json:"cep"`
+	DevDump    bool
 }
