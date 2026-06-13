@@ -1,6 +1,7 @@
 package render
 
 import (
+	"context"
 	"io"
 	"log"
 	"os"
@@ -36,57 +37,47 @@ func hasAudioStream(input string) bool {
 	return len(output) > 0
 }
 
-func Render(args *cli.Arguments, rc *recipe.Recipe) {
-	if err := temp.InitTemp(args); err != nil {
-		log.Panicln(err.Error())
+// prepareAudio checks if an audio stream exists, extracts it, and registers it.
+func prepareAudio(args *cli.Arguments, rc *recipe.Recipe) (bool, error) {
+	if !hasAudioStream(args.InputFile) {
+		return false, nil
 	}
 
 	audioTracks, err := temp.Join("audiotracks.mka")
 	if err != nil {
-		log.Panicln(err.Error())
+		return false, err
 	}
 
-	hasAudioTracks := hasAudioStream(args.InputFile)
-	if hasAudioTracks {
-		extractAudio := cmd.ExtractAudioCommandBuilder(args, rc, audioTracks)
+	extractAudio := cmd.ExtractAudioCommandBuilder(args, rc, audioTracks)
+	extractAudioCmd := exec.Command(extractAudio[0], extractAudio[1:]...)
+	extractAudioCmd.Stderr = os.Stderr
+	extractAudioCmd.Stdout = os.Stdout
 
-		extractAudioCmd := exec.Command(extractAudio[0], extractAudio[1:]...)
-		extractAudioCmd.Stderr = os.Stderr
-		extractAudioCmd.Stdout = os.Stdout
-		if err := extractAudioCmd.Run(); err != nil {
-			log.Panicf("Extract audio failed: %v", err)
-		}
-
-		if err := temp.RegisterTempFile("audiotracks.mka"); err != nil {
-			log.Panicln(err.Error())
-		}
+	if err := extractAudioCmd.Run(); err != nil {
+		return false, err
 	}
 
-	vspipe, ffmpeg, ffplay := cmd.VspipeCommandBuilder(args, rc, hasAudioTracks)
-	vspipeCmd := exec.Command(vspipe[0], vspipe[1:]...)
-	ffmpegCmd := exec.Command(ffmpeg[0], ffmpeg[1:]...)
-	vspipeCmd.Stderr = os.Stderr
-	ffmpegCmd.Stderr = os.Stderr
-
-	var ffplayCmd *exec.Cmd
-	var pipeReader2 *io.PipeReader
-	var pipeWriter2 *io.PipeWriter
-
-	if rc.PreviewWindow.Enabled {
-		ffplayCmd = exec.Command(ffplay[0], ffplay[1:]...)
-		ffplayCmd.Stderr = os.Stderr
-		pipeReader2, pipeWriter2 = io.Pipe()
-		ffplayCmd.Stdin = pipeReader2
+	if err := temp.RegisterTempFile("audiotracks.mka"); err != nil {
+		return false, err
 	}
 
+	return true, nil
+}
+
+// setupPipelinePipes connects stdout of vspipe to stdin of ffmpeg, optionally copying to ffplay via a MultiWriter.
+func setupPipelinePipes(rc *recipe.Recipe, vspipeCmd, ffmpegCmd, ffplayCmd *exec.Cmd) error {
 	vspipeOut, err := vspipeCmd.StdoutPipe()
 	if err != nil {
-		log.Fatalf("Failed to create pipe for vspipe: %v", err)
+		return err
 	}
 
-	if rc.PreviewWindow.Enabled {
+	if rc.PreviewWindow.Enabled && ffplayCmd != nil {
 		pipeReader1, pipeWriter1 := io.Pipe()
 		ffmpegCmd.Stdin = pipeReader1
+
+		pipeReader2, pipeWriter2 := io.Pipe()
+		ffplayCmd.Stdin = pipeReader2
+
 		go func() {
 			defer pipeWriter1.Close()
 			defer pipeWriter2.Close()
@@ -98,6 +89,40 @@ func Render(args *cli.Arguments, rc *recipe.Recipe) {
 		}()
 	} else {
 		ffmpegCmd.Stdin = vspipeOut
+	}
+
+	return nil
+}
+
+// Render executes the frame rendering pipeline.
+func Render(args *cli.Arguments, rc *recipe.Recipe) {
+	if err := temp.InitTemp(args); err != nil {
+		log.Panicln(err.Error())
+	}
+
+	hasAudioTracks, err := prepareAudio(args, rc)
+	if err != nil {
+		log.Panicf("Prepare audio failed: %v", err)
+	}
+
+	vspipe, ffmpeg, ffplay := cmd.VspipeCommandBuilder(args, rc, hasAudioTracks)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	vspipeCmd := exec.CommandContext(ctx, vspipe[0], vspipe[1:]...)
+	ffmpegCmd := exec.CommandContext(ctx, ffmpeg[0], ffmpeg[1:]...)
+	vspipeCmd.Stderr = os.Stderr
+	ffmpegCmd.Stderr = os.Stderr
+
+	var ffplayCmd *exec.Cmd
+	if rc.PreviewWindow.Enabled {
+		ffplayCmd = exec.CommandContext(ctx, ffplay[0], ffplay[1:]...)
+		ffplayCmd.Stderr = os.Stderr
+	}
+
+	if err := setupPipelinePipes(rc, vspipeCmd, ffmpegCmd, ffplayCmd); err != nil {
+		log.Panicf("Failed to setup pipeline pipes: %v", err)
 	}
 
 	commands := []*exec.Cmd{vspipeCmd, ffmpegCmd}
@@ -123,22 +148,12 @@ func Render(args *cli.Arguments, rc *recipe.Recipe) {
 		}(c)
 	}
 
-	killEverything := false
-	var procErr procResult
+	// Wait for any command to finish. If the main encoder (ffmpegCmd) exits,
+	// or if any command exits with an error, cancel the context to clean up the rest.
 	for i := 0; i < len(commands); i++ {
-		procErr = <-resCh
-		if procErr.cmd == ffmpegCmd || procErr.err != nil {
-			killEverything = true
-			break
-		}
-	}
-
-	// kill everything if ffmpeg is dead or if theres error
-	if killEverything {
-		for _, c := range commands {
-			if c.Process != nil {
-				c.Process.Kill()
-			}
+		res := <-resCh
+		if res.cmd == ffmpegCmd || res.err != nil {
+			cancel()
 		}
 	}
 

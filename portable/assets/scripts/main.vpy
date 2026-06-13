@@ -11,7 +11,7 @@ import os
 script_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, script_dir)
 
-for mod in ['havsfunc', 'adjust', 'filldrops', 'frameblend', 'interp', 'masking', 'pre_interp', 'utils']:
+for mod in ['havsfunc', 'adjust', 'filldrops', 'frameblend', 'interp', 'masking', 'pre_interp', 'utils', 'lut']:
     sys.modules.pop(mod, None)
 
 logger = logging.getLogger("smoothie")
@@ -99,6 +99,15 @@ if recipe["color_grading"]["enabled"]:
             coring=recipe["color_grading"]["coring"]
             )
     logger.debug(f"Color grading: {recipe['color_grading']}")
+
+if recipe["lut"]["enabled"]:
+    import lut
+    try:
+        clip = lut.apply_lut(clip, recipe)
+        logger.debug(f"Applied LUT: {recipe['lut']['path']} with opacity {recipe['lut']['opacity']}")
+    except Exception as e:
+        logger.error(f"Failed to apply LUT: {e}")
+        exit(1)
 
 if recipe["pre_interp"]["enabled"]:
     import pre_interp

@@ -22,6 +22,14 @@ $DlDir = Join-Path $PSScriptRoot "build_downloads"
 $TmpDir = Join-Path $PSScriptRoot "build_temp"
 $LayoutDir = Join-Path $TmpDir "layout"
 
+# Clean up any leftover directories from previous runs
+if ($TmpDir -and (Test-Path $TmpDir) -and ($TmpDir -like "*build_temp*")) {
+    Remove-Item -Path $TmpDir -Recurse -Force
+}
+if ($DlDir -and (Test-Path $DlDir) -and ($DlDir -like "*build_downloads*")) {
+    Remove-Item -Path $DlDir -Recurse -Force
+}
+
 New-Item -ItemType Directory -Force -Path $DlDir, $TmpDir, $LayoutDir | Out-Null
 
 try {
@@ -178,5 +186,8 @@ $DirectoryTreeXml        </Directory>
 finally {
     if ($TmpDir -and (Test-Path $TmpDir) -and ($TmpDir -like "*build_temp*")) {
         Remove-Item -Path $TmpDir -Recurse -Force
+    }
+    if ($DlDir -and (Test-Path $DlDir) -and ($DlDir -like "*build_downloads*")) {
+        Remove-Item -Path $DlDir -Recurse -Force
     }
 }

@@ -1,11 +1,13 @@
 #!/bin/bash
 set -e
+# Clean up any leftover temporary build directories from previous runs
+rm -rf /tmp/smoothie-go-build.* 2>/dev/null || true
 
 TMP_DIR=$(mktemp -d -t smoothie-go-build.XXXXXX)
 
 cleanup() {
 	if [ -n "$TMP_DIR" ] && [ -d "$TMP_DIR" ] && [[ "$TMP_DIR" == */smoothie-go-build.* ]]; then
-		find "$TMP_DIR" -delete
+		rm -rf "$TMP_DIR"
 	fi
 }
 trap cleanup EXIT
@@ -25,7 +27,7 @@ curl -L -o "$DL_DIR/libsvpflow1.so" "https://github.com/smoothie-go/smoothie-go/
 curl -L -o "$DL_DIR/libsvpflow2.so" "https://github.com/smoothie-go/smoothie-go/raw/refs/heads/master/resources/vapoursynth/libsvpflow2.so"
 curl -L -o "$DL_DIR/frameblender.so" "https://github.com/couleurm/vs-frameblender/releases/download/1.2/vs-frameblender-1.2.so"
 curl -L -o "$DL_DIR/librife.so" "https://github.com/styler00dollar/VapourSynth-RIFE-ncnn-Vulkan/releases/download/r9_mod_v32/librife_linux_x86-64.so"
-curl -L -o "$DL_DIR/ffmpeg.tar.xz" "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz"
+curl -L -o "$DL_DIR/ffmpeg.tar.xz" "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz"
 
 mkdir -p "$TMP_DIR/python" && tar -xzf "$DL_DIR/python.tar.gz" -C "$TMP_DIR/python"
 mkdir -p "$TMP_DIR/vapoursynth" && tar -xzf "$DL_DIR/vapoursynth.tar.gz" -C "$TMP_DIR/vapoursynth"
@@ -40,9 +42,9 @@ cp -r "$TMP_DIR/python/3.10.4/lib/"* "$LAYOUT_DIR/lib/"
 cp -r "$TMP_DIR/vapoursynth/workspace/lib/"* "$LAYOUT_DIR/lib/"
 cp "$TMP_DIR/vapoursynth/workspace/bin/vspipe" "$LAYOUT_DIR/"
 
-cp "$TMP_DIR/ffmpeg/ffmpeg-n7.1-latest-linux64-gpl-7.1/bin/ffmpeg" "$LAYOUT_DIR/"
-cp "$TMP_DIR/ffmpeg/ffmpeg-n7.1-latest-linux64-gpl-7.1/bin/ffplay" "$LAYOUT_DIR/"
-cp "$TMP_DIR/ffmpeg/ffmpeg-n7.1-latest-linux64-gpl-7.1/bin/ffprobe" "$LAYOUT_DIR/"
+cp "$TMP_DIR/ffmpeg/ffmpeg-master-latest-linux64-gpl/bin/ffmpeg" "$LAYOUT_DIR/"
+cp "$TMP_DIR/ffmpeg/ffmpeg-master-latest-linux64-gpl/bin/ffplay" "$LAYOUT_DIR/"
+cp "$TMP_DIR/ffmpeg/ffmpeg-master-latest-linux64-gpl/bin/ffprobe" "$LAYOUT_DIR/"
 
 cp "$TMP_DIR/bestsource/bestsource.so" "$LAYOUT_DIR/lib/vapoursynth/"
 cp "$TMP_DIR/fmtconv/libfmtconv.so" "$LAYOUT_DIR/lib/vapoursynth/"
