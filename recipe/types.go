@@ -1,5 +1,7 @@
 package recipe
 
+import "gopkg.in/ini.v1"
+
 type Recipe struct {
 	Interpolation struct {
 		Enabled   bool   `ini:"enabled" json:"enabled"`
@@ -87,4 +89,6 @@ type Recipe struct {
 		Factor      string `ini:"factor" json:"factor"`
 		Model       string `ini:"model" json:"model"`
 	} `ini:"pre-interp" json:"pre_interp"`
+
+	ini_config *ini.File
 }

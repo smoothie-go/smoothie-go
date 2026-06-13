@@ -1,10 +1,11 @@
 package recipe
 
 import (
+	"log"
+
 	"github.com/smoothie-go/smoothie-go/cli"
 	"github.com/smoothie-go/smoothie-go/portable"
 	"gopkg.in/ini.v1"
-	"log"
 )
 
 func Parse(args *cli.Arguments) *Recipe {
@@ -33,6 +34,10 @@ func Parse(args *cli.Arguments) *Recipe {
 	if recipe.Miscellaneous.AlwaysVerbose {
 		args.Verbose = true
 	}
+
+	recipe.ini_config = config
+
+	ParseDynamicMasking(recipe, args)
 
 	recipe = Validate(args, recipe)
 
