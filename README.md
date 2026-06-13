@@ -78,11 +78,22 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [ ] preview_window::process
   - [x] preview_window::output_args
 
-- [ ] **artifact_masking**
-  - [ ] artifact_masking::enabled
-  - [ ] artifact_masking::feathering
-  - [ ] artifact_masking::folder_path
-  - [ ] artifact_masking::file_name
+- [x] **artifact_masking**
+  - [x] artifact_masking::enabled: bool
+  - [x] artifact_masking::feathering: bool
+  - [x] artifact_masking::folder_path: string
+  - [x] artifact_masking::file_name: string
+
+-[x] **dynamic masking**
+  - [x] dynamic_masking::enabled: bool
+  - [x] dynamic_masking::* : "filename"
+    - Example:
+    ```toml
+      [dynamic_masking]
+      enabled = true
+      .*cs2.* = "cs2.png"
+      .*minecraft.* = "minecraft.png"
+    ```
 
 - [ ] **miscellaneous**
   - [ ] miscellaneous::play_ding
@@ -93,16 +104,9 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
   - [x] miscellaneous::ffmpeg_options
   - [x] miscellaneous::ffplay_options
 
-- [ ] **console**
-  - [ ] console::stay_on_top
-  - [ ] console::borderless
-  - [ ] console::position
-  - [ ] console::width
-  - [ ] console::height
-
-- [ ] **timescale**
-  - [ ] timescale::in
-  - [ ] timescale::out
+- [x] **timescale**
+  - [x] timescale::in
+  - [x] timescale::out
 
 - [x] **color_grading**
   - [x] color_grading::enabled
