@@ -12,6 +12,12 @@ if (Test-Path $LocalBinary) {
     $LocalBinary = [System.IO.Path]::GetFullPath($LocalBinary)
 }
 
+if ($Version -match '^(\d+\.\d+\.\d+)') {
+    $Version = $Matches[1]
+} else {
+    $Version = "1.0.0"
+}
+
 $DlDir = Join-Path $PSScriptRoot "build_downloads"
 $TmpDir = Join-Path $PSScriptRoot "build_temp"
 $LayoutDir = Join-Path $TmpDir "layout"
