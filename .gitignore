@@ -17,11 +17,27 @@
 # binary
 smoothie-go
 smoothie-go-*
+*.msi
+*.exe
+*.rpm
+*.deb
+
+# Unfinished installer creation scripts
+build_msi.ps1
+make_installer.sh
+
+# dump
+dev_dump*
 
 # scripts
 scripts/
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+build_downloads
+build_temp
+
+resources/vapoursynth/*.so
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
