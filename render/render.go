@@ -84,23 +84,21 @@ func Render(args *cli.Arguments, rc *recipe.Recipe) {
 		log.Fatalf("Failed to create pipe for vspipe: %v", err)
 	}
 
-	pipeReader1, pipeWriter1 := io.Pipe()
-	go func() {
-		defer pipeWriter1.Close()
-		if rc.PreviewWindow.Enabled {
+	if rc.PreviewWindow.Enabled {
+		pipeReader1, pipeWriter1 := io.Pipe()
+		ffmpegCmd.Stdin = pipeReader1
+		go func() {
+			defer pipeWriter1.Close()
 			defer pipeWriter2.Close()
 			multiWriter := io.MultiWriter(pipeWriter1, pipeWriter2)
-			if _, err := io.Copy(multiWriter, vspipeOut); err != nil {
+			buf := make([]byte, 1024*1024)
+			if _, err := io.CopyBuffer(multiWriter, vspipeOut, buf); err != nil {
 				log.Printf("Error while copying vspipe output: %v", err)
 			}
-		} else {
-			if _, err := io.Copy(pipeWriter1, vspipeOut); err != nil {
-				log.Printf("Error while copying vspipe output: %v", err)
-			}
-		}
-	}()
-
-	ffmpegCmd.Stdin = pipeReader1
+		}()
+	} else {
+		ffmpegCmd.Stdin = vspipeOut
+	}
 
 	commands := []*exec.Cmd{vspipeCmd, ffmpegCmd}
 	if rc.PreviewWindow.Enabled {
