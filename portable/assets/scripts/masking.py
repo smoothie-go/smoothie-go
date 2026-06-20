@@ -1,4 +1,5 @@
 import os
+# pyrefly: ignore [missing-import]
 import vapoursynth as vs
 from vapoursynth import core
 import havsfunc
@@ -14,9 +15,15 @@ def apply_mask(clip: vs.VideoNode, original_clip: vs.VideoNode, recipe: dict) ->
     if not os.path.exists(mask_path):
         raise FileNotFoundError(f"Mask file not found at: {mask_path}")
 
-    mask = core.imwri.Read(mask_path)
-    mask_format = core.register_format(vs.GRAY, clip.format.sample_type, clip.format.bits_per_sample, 0, 0)
-    mask = core.resize.Bicubic(mask, width=clip.width, height=clip.height, format=mask_format.id)
+    mask = core.bs.VideoSource(source=mask_path, cachemode=0)
+    if hasattr(core, "query_video_format"):
+        mask_format = core.query_video_format(vs.GRAY, clip.format.sample_type, clip.format.bits_per_sample, 0, 0)
+    else:
+        mask_format = core.register_format(vs.GRAY, clip.format.sample_type, clip.format.bits_per_sample, 0, 0)
+    if mask.format.color_family == vs.RGB:
+        mask = core.resize.Bicubic(mask, width=clip.width, height=clip.height, format=mask_format.id, matrix_s="709")
+    else:
+        mask = core.resize.Bicubic(mask, width=clip.width, height=clip.height, format=mask_format.id)
 
     if recipe["artifact_masking"]["feathering"]:
         mask = mask.std.Minimum().std.BoxBlur(vradius=6, hradius=6, vpasses=2, hpasses=2)
