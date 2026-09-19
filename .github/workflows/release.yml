@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set up Go
         uses: actions/setup-go@v4
@@ -111,11 +113,21 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.25'
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build open-svpflow
+        shell: bash
+        run: |
+          cargo build --release --manifest-path external/open-svpflow/Cargo.toml -p svpflow1 -p svpflow2
 
       - name: Build and Package Installer
         shell: bash

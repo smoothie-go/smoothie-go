@@ -23,8 +23,28 @@ curl -L -o "$DL_DIR/python.tar.gz" "https://github.com/smoothie-go/pyenv-build/r
 curl -L -o "$DL_DIR/vapoursynth.tar.gz" "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vapoursynth-fa1f579a63b4fdef5f436c086875fe9c4879b5d2/vapoursynth-build-linux-x86_64.tar.gz"
 curl -L -o "$DL_DIR/fmtconv.zip" "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin%2Ffmtconv%2Fgit-18a9cecb%2Flinux-glibc-x86_64%2F2024-10-10T14.44.42%2B00.00Z/fmtconv-git-18a9cecb-linux-glibc-x86_64.zip"
 curl -L -o "$DL_DIR/bestsource.zip" "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin%2Fcom.vapoursynth.bestsource%2FR8%2Flinux-glibc-x86_64%2F2024-12-12T18.37.59%2B00.00Z/BestSource-R8-linux-glibc-x86_64.zip"
-curl -L -o "$DL_DIR/libsvpflow1.so" "https://github.com/smoothie-go/smoothie-go/raw/refs/heads/master/resources/vapoursynth/libsvpflow1.so"
-curl -L -o "$DL_DIR/libsvpflow2.so" "https://github.com/smoothie-go/smoothie-go/raw/refs/heads/master/resources/vapoursynth/libsvpflow2.so"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BUILT_SVP1="$SCRIPT_DIR/external/open-svpflow/target/release/libsvpflow1_vs.so"
+BUILT_SVP2="$SCRIPT_DIR/external/open-svpflow/target/release/libsvpflow2_vs.so"
+RES_SVP1="$SCRIPT_DIR/resources/vapoursynth/libsvpflow1_vs.so"
+RES_SVP2="$SCRIPT_DIR/resources/vapoursynth/libsvpflow2_vs.so"
+
+if [ -f "$BUILT_SVP1" ] && [ -f "$BUILT_SVP2" ]; then
+	echo "Using locally built open-svpflow binaries..."
+	mkdir -p "$TMP_DIR/open-svpflow"
+	cp "$BUILT_SVP1" "$TMP_DIR/open-svpflow/libsvpflow1_vs.so"
+	cp "$BUILT_SVP2" "$TMP_DIR/open-svpflow/libsvpflow2_vs.so"
+elif [ -f "$RES_SVP1" ] && [ -f "$RES_SVP2" ]; then
+	echo "Using open-svpflow binaries from resources/vapoursynth..."
+	mkdir -p "$TMP_DIR/open-svpflow"
+	cp "$RES_SVP1" "$TMP_DIR/open-svpflow/libsvpflow1_vs.so"
+	cp "$RES_SVP2" "$TMP_DIR/open-svpflow/libsvpflow2_vs.so"
+else
+	echo "Downloading open-svpflow release..."
+	curl -L -o "$DL_DIR/open-svpflow.zip" "https://github.com/Z1xus/open-svpflow/releases/latest/download/x86_64-unknown-linux-gnu.zip"
+	mkdir -p "$TMP_DIR/open-svpflow" && unzip -o "$DL_DIR/open-svpflow.zip" -d "$TMP_DIR/open-svpflow"
+fi
+
 curl -L -o "$DL_DIR/frameblender.so" "https://github.com/couleurm/vs-frameblender/releases/download/1.2/vs-frameblender-1.2.so"
 curl -L -o "$DL_DIR/librife.so" "https://github.com/styler00dollar/VapourSynth-RIFE-ncnn-Vulkan/releases/download/r9_mod_v32/librife_linux_x86-64.so"
 AUTH_HEADER=()
@@ -55,8 +75,10 @@ cp "$TMP_DIR"/ffmpeg/*/bin/ffprobe "$LAYOUT_DIR/"
 cp "$TMP_DIR/bestsource/bestsource.so" "$LAYOUT_DIR/lib/vapoursynth/"
 cp "$TMP_DIR/fmtconv/libfmtconv.so" "$LAYOUT_DIR/lib/vapoursynth/"
 cp "$DL_DIR/frameblender.so" "$LAYOUT_DIR/lib/vapoursynth/frameblender.so"
-cp "$DL_DIR/libsvpflow1.so" "$LAYOUT_DIR/lib/vapoursynth/"
-cp "$DL_DIR/libsvpflow2.so" "$LAYOUT_DIR/lib/vapoursynth/"
+cp "$TMP_DIR/open-svpflow/libsvpflow1_vs.so" "$LAYOUT_DIR/lib/vapoursynth/"
+cp "$TMP_DIR/open-svpflow/libsvpflow2_vs.so" "$LAYOUT_DIR/lib/vapoursynth/"
+cp "$TMP_DIR/open-svpflow/libsvpflow1_vs.so" "$LAYOUT_DIR/lib/vapoursynth/libsvpflow1.so"
+cp "$TMP_DIR/open-svpflow/libsvpflow2_vs.so" "$LAYOUT_DIR/lib/vapoursynth/libsvpflow2.so"
 cp "$DL_DIR/librife.so" "$LAYOUT_DIR/lib/vapoursynth/"
 
 tar -czf "$TMP_DIR/payload.tar.gz" -C "$LAYOUT_DIR" .
