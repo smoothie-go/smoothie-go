@@ -1,0 +1,3 @@
+[submodule "external/open-svpflow"]
+	path = external/open-svpflow
+	url = https://github.com/Z1xus/open-svpflow

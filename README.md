@@ -8,144 +8,26 @@ The rewrites being, smoothie-go, smoothie-rs, smoothie, teres
 
 ![doing this](assets/doingthis.png)
 
-## Checklist
+## Installation
 
-### Internal
+### Windows
+- Grab the installer from the [releases](https://github.com/hzqki/smoothie-go/releases) page
+- Install it I guess.
 
-- [x] **config**
-  - [x] Parsing INI
-  - [x] Getting configs
-  - [x] Presistent configs (Pretty much just, delete the file, it reappears on the next run)
+### Linux
 
-- [x] **Interpolation**
-  - [x] SVP
-  - [x] RIFE
-  - [x] Nvidia Optical Flow (Will be limited to linux users, unless you buy SVPFlow unfortunately)
+- Grab the .run binary from the [releases](https://github.com/hzqki/smoothie-go/releases) page
+- You need sudo permissions to install, but you don't run the installer as sudo.
 
-- [x] **Args**
-  - [x] Parsing args
-  - [x] Validating args
+```bash
+chmod +x ./smoothie-go-installer.run
 
-- [ ] **VPYs**
-  - [ ] Built in
-    - [x] Interp
-    - [x] Best source loading
-    - [x] Pre-Interp
-    - [x] Blending
-    - [ ] Flowblur
-    - [x] Masking
-  - [ ] ~~User provided vpy~~ *Not going to be implemented*
+./smoothie-go-installer.run
+```
 
-### Recipe
-- [x] **interpolation**
-  - [x] interpolation::enabled
-  - [x] interpolation::type (SVP/OF)
-  - [x] interpolation::masking
-  - [x] interpolation::fps
-  - [x] interpolation::speed
-  - [x] interpolation::tuning
-  - [x] interpolation::algorithm
-  - [ ] interpolation::block_size
-  - [x] interpolation::use_gpu
-  - [ ] interpolation::area
-
-- [x] **frame_blending**
-  - [x] frame_blending::enabled
-  - [x] frame_blending::fps
-  - [x] frame_blending::intensity
-  - [x] frame_blending::weighting
-  - [x] frame_blending::bright_blend
-
-- [ ] **flowblur**
-  - [ ] flowblur::enabled
-  - [ ] flowblur::masking
-  - [ ] flowblur::amount
-  - [ ] flowblur::do_blending
-
-- [ ] **output**
-  - [ ] output::process
-  - [x] output::enc_args
-  - [x] output::file_format
-  - [x] output::container
-
-- [ ] **preview_window**
-  - [x] preview_window::enabled
-  - [ ] preview_window::process
-  - [x] preview_window::output_args
-
-- [x] **artifact_masking**
-  - [x] artifact_masking::enabled: bool
-  - [x] artifact_masking::feathering: bool
-  - [x] artifact_masking::folder_path: string
-  - [x] artifact_masking::file_name: string
-
--[x] **dynamic masking**
-  - [x] dynamic_masking::enabled: bool
-  - [x] dynamic_masking::* : "filename"
-    - Example:
-    ```toml
-      [dynamic_masking]
-      enabled = true
-      .*cs2.* = "cs2.png"
-      .*minecraft.* = "minecraft.png"
-    ```
-
-- [ ] **miscellaneous**
-  - [ ] miscellaneous::play_ding
-  - [x] miscellaneous::always_verbose
-  - [x] miscellaneous::dedup_threshold
-  - [x] miscellaneous::global_output_folder
-  - [ ] miscellaneous::source_indexing
-  - [x] miscellaneous::ffmpeg_options
-  - [x] miscellaneous::ffplay_options
-
-- [x] **timescale**
-  - [x] timescale::in
-  - [x] timescale::out
-
-- [x] **color_grading**
-  - [x] color_grading::enabled
-  - [x] color_grading::brightness
-  - [x] color_grading::saturation
-  - [x] color_grading::contrast
-  - [x] color_grading::hue
-  - [x] color_grading::coring
-
-- [x] **lut**
-  - [x] lut::enabled
-  - [x] lut::path
-  - [x] lut::opacity
-
-- [x] **pre_interp**
-  - [x] pre_interp::enabled
-  - [x] pre_interp::scene_change
-  - [x] pre_interp::tta
-  - [x] pre_interp::uhd
-  - [x] pre_interp::masking
-  - [x] pre_interp::factor
-  - [x] pre_interp::model
-
-## Priorities
-
-* Portablity & stability over speed - I don't want it to be the fastest possible, I want it to work on most platforms and be as stable as possible, while being fast enough.
-
-## Features that WONT be implemented (by me)
-
-If you want any features from here, **implement it and PR**, you will most likely be accepted.
-
-GUI, purely CLI for now.
-
-`last_args.txt`, never saw the use in that.
-
-`--rerun, -!!`, depends on last_args, just hit the up arrow, or use shell history
-
-`--json`
-
-`--tui`, GUI file picker
-
-Frameserver, just pre-render bro
-
+### MacOS
+- Not Supported... *yet*.
 
 ## Thanks
 [couleur-tweak-tips/smoothie-rs](https://github.com/couleur-tweak-tips/smoothie-rs) - For the og implementation
-
+[Z1xus/open-svpflow](https://github.com/Z1xus/open-svpflow) - For the open-svpflow implementation
