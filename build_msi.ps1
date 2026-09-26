@@ -54,9 +54,19 @@ $Headers = @{}
 if ($env:GITHUB_TOKEN) {
     $Headers["Authorization"] = "Bearer $env:GITHUB_TOKEN"
 }
-$FfmpegJson = Invoke-RestMethod -Uri "https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest" -Headers $Headers -UseBasicParsing
-$FfmpegAsset = $FfmpegJson.assets | Where-Object { $_.name -like "ffmpeg-n7.1*-win64-gpl-7.1.zip" } | Select-Object -First 1
-$FfmpegUrl = $FfmpegAsset.browser_download_url
+$FfmpegUrl = $null
+try {
+    $FfmpegJson = Invoke-RestMethod -Uri "https://api.github.com/repos/BtbN/FFmpeg-Builds/releases/latest" -Headers $Headers -UseBasicParsing
+    $FfmpegAsset = $FfmpegJson.assets | Where-Object { ($_.name -like "*win64-gpl*.zip") -and ($_.name -notlike "*shared*") } | Select-Object -First 1
+    if ($FfmpegAsset) {
+        $FfmpegUrl = $FfmpegAsset.browser_download_url
+    }
+} catch {
+    Write-Warning "Failed to query GitHub API for FFmpeg: $_"
+}
+if (-not $FfmpegUrl) {
+    $FfmpegUrl = "https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl.zip"
+}
 $FfmpegZip = Join-Path $DlDir "ffmpeg.zip"
 if (-not (Test-Path $FfmpegZip) -or (Get-Item $FfmpegZip).Length -lt 10MB) {
     Invoke-WebRequest -Uri $FfmpegUrl -OutFile $FfmpegZip -UseBasicParsing
