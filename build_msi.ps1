@@ -78,7 +78,7 @@ Copy-Item -Path (Join-Path $FfbinPath "ffmpeg.exe") -Destination $LayoutDir -For
 Copy-Item -Path (Join-Path $FfbinPath "ffplay.exe") -Destination $LayoutDir -Force
 Copy-Item -Path (Join-Path $FfbinPath "ffprobe.exe") -Destination $LayoutDir -Force
 
-$VsUrl = "https://github.com/smoothie-go/VSBundler/releases/download/Nightly_2025.08.14_02-55/VapourSynth.zip"
+$VsUrl = "https://github.com/smoothie-go/VSBundler/releases/download/Nightly_2026.09.30_06-25/VapourSynth.zip"
 $VsZip = Join-Path $DlDir "VapourSynth.zip"
 if (-not (Test-Path $VsZip) -or (Get-Item $VsZip).Length -lt 10MB) {
     Invoke-WebRequest -Uri $VsUrl -OutFile $VsZip -UseBasicParsing
