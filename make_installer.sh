@@ -72,8 +72,6 @@ cp "$TMP_DIR/fmtconv/libfmtconv.so" "$LAYOUT_DIR/lib/vapoursynth/"
 cp "$DL_DIR/frameblender.so" "$LAYOUT_DIR/lib/vapoursynth/frameblender.so"
 cp "$TMP_DIR/open-svpflow/libsvpflow1_vs.so" "$LAYOUT_DIR/lib/vapoursynth/"
 cp "$TMP_DIR/open-svpflow/libsvpflow2_vs.so" "$LAYOUT_DIR/lib/vapoursynth/"
-cp "$TMP_DIR/open-svpflow/libsvpflow1_vs.so" "$LAYOUT_DIR/lib/vapoursynth/libsvpflow1.so"
-cp "$TMP_DIR/open-svpflow/libsvpflow2_vs.so" "$LAYOUT_DIR/lib/vapoursynth/libsvpflow2.so"
 cp "$DL_DIR/librife.so" "$LAYOUT_DIR/lib/vapoursynth/"
 
 tar -czf "$TMP_DIR/payload.tar.gz" -C "$LAYOUT_DIR" .
