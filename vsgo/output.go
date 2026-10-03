@@ -17,7 +17,7 @@ var y4mSubsampling = map[[2]int]string{
 func y4mHeader(vi VideoInfo) (string, error) {
 	f := vi.Format
 	format := y4mSubsampling[[2]int{f.SubSamplingW, f.SubSamplingH}]
-	if f.ColorFamily != YUV || f.SampleType != integer || format == "" || vi.Width == 0 {
+	if f.ColorFamily != YUV || f.SampleType != Integer || format == "" || vi.Width == 0 {
 		return "", errors.New("vsgo: y4m needs a constant integer YUV clip")
 	}
 	if f.BitsPerSample > 8 {

@@ -25,7 +25,7 @@ const char *vsgo_load(const char *name) {
     if (!get)
         return "getVapourSynthAPI not found";
     vsgo_api = get(VAPOURSYNTH_API_VERSION);
-    return vsgo_api ? NULL : "api 4 is not supported";
+    return vsgo_api ? NULL : "the library is older than api 4";
 }
 
 static void VS_CC logMessage(int level, const char *msg, void *handle) { vsgoLog(level, (char *)msg, (uintptr_t)handle); }

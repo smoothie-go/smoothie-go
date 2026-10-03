@@ -16,10 +16,11 @@ const (
 	RGB  = C.cfRGB
 	YUV  = C.cfYUV
 
-	integer = C.stInteger
+	Integer = C.stInteger
 
 	YUV444P8 = C.pfYUV444P8
 	RGB48    = C.pfRGB48
+	RGBS     = C.pfRGBS
 )
 
 type VideoFormat struct {
