@@ -24,7 +24,7 @@ func (g graph) preInterp(clip *vsgo.Node) *vsgo.Node {
 		matrix, transfer, primaries = "470bg", "470bg", "470bg"
 	}
 
-	clip = g.clip("resize", "Bicubic", vsgo.Args{
+	clip = g.filter("resize", "Bicubic", vsgo.Args{
 		"clip": clip, "format": vsgo.RGBS,
 		"matrix_in_s": matrix, "transfer_in_s": transfer, "primaries_in_s": primaries,
 		"range_in_s": "limited", "chromaloc_in_s": chromaloc,
@@ -32,7 +32,7 @@ func (g graph) preInterp(clip *vsgo.Node) *vsgo.Node {
 
 	factor := 1
 	fmt.Sscanf(pre.Factor, "%d", &factor)
-	clip = g.clip("rife", "RIFE", vsgo.Args{
+	clip = g.filter("rife", "RIFE", vsgo.Args{
 		"clip":       clip,
 		"factor_num": factor,
 		"model_path": strings.Trim(pre.Model, `"`),
@@ -43,7 +43,7 @@ func (g graph) preInterp(clip *vsgo.Node) *vsgo.Node {
 		"sc":         pre.SceneChange,
 	})
 
-	return g.clip("resize", "Bicubic", vsgo.Args{
+	return g.filter("resize", "Bicubic", vsgo.Args{
 		"clip": clip, "format": vi.Format.ID(),
 		"matrix_s": matrix, "transfer_s": transfer, "primaries_s": primaries,
 		"range_s": "limited", "chromaloc_s": chromaloc,
@@ -65,7 +65,7 @@ func (g graph) interp(clip *vsgo.Node) *vsgo.Node {
 	case "of":
 		opt := fmt.Sprintf(`{"rate":{"num":%d,"abs":true},"algo":%d,"mask":{"area":0,"area_sharp":1.2},"scene":{"blend":false,"mode":0,"limits":{"blocks":%d}}}`,
 			in.Fps, in.Algorithm, in.OfBlocks)
-		clip = g.clip("svp2", "SmoothFps_NVOF", vsgo.Args{"clip": clip, "opt": opt, "vec_src": clip})
+		clip = g.filter("svp2", "SmoothFps_NVOF", vsgo.Args{"clip": clip, "opt": opt, "vec_src": clip})
 	}
 
 	if scaled {
@@ -76,7 +76,7 @@ func (g graph) interp(clip *vsgo.Node) *vsgo.Node {
 
 func (g graph) scaleLuma(clip *vsgo.Node, up bool) *vsgo.Node {
 	plane := func(i int) *vsgo.Node {
-		return g.clip("std", "ShufflePlanes", vsgo.Args{"clips": clip, "planes": i, "colorfamily": vsgo.Gray})
+		return g.filter("std", "ShufflePlanes", vsgo.Args{"clips": clip, "planes": i, "colorfamily": vsgo.Gray})
 	}
 	y := plane(0)
 	vi := y.Info()
@@ -84,8 +84,8 @@ func (g graph) scaleLuma(clip *vsgo.Node, up bool) *vsgo.Node {
 	if up {
 		width, height = vi.Width*2, vi.Height*2
 	}
-	y = g.clip("resize", "Point", vsgo.Args{"clip": y, "width": width, "height": height})
-	return g.clip("std", "ShufflePlanes", vsgo.Args{
+	y = g.filter("resize", "Point", vsgo.Args{"clip": y, "width": width, "height": height})
+	return g.filter("std", "ShufflePlanes", vsgo.Args{
 		"clips":       []*vsgo.Node{y, plane(1), plane(2)},
 		"planes":      []int{0, 0, 0},
 		"colorfamily": vsgo.YUV,
@@ -104,12 +104,14 @@ func (g graph) interFrame(clip *vsgo.Node) *vsgo.Node {
 	}
 	animation, weak := tuning == "animation", tuning == "weak"
 
-	super := "{gpu:0}"
-	if in.Gpu {
-		super = "{gpu:1}"
-	}
+	super := "{"
 	if preset != "medium" {
-		super = "{pel:1," + super[1:]
+		super += "pel:1,"
+	}
+	if in.Gpu {
+		super += "gpu:1}"
+	} else {
+		super += "gpu:0}"
 	}
 
 	block, overlap := 8, 2
@@ -132,11 +134,9 @@ func (g graph) interFrame(clip *vsgo.Node) *vsgo.Node {
 	default:
 		vectors += "distance:0,coarse:{"
 	}
-	switch {
-	case animation:
-	case weak:
+	if weak {
 		vectors += "distance:-1,trymany:true,"
-	default:
+	} else if !animation {
 		vectors += "distance:-10,"
 	}
 	switch {
@@ -172,10 +172,10 @@ func (g graph) interFrame(clip *vsgo.Node) *vsgo.Node {
 		data, _ := m.Int("data")
 		return m.Node("clip"), data
 	}
-	eightBit := g.clip("fmtc", "bitdepth", vsgo.Args{"clip": clip, "bits": 8})
+	eightBit := g.filter("fmtc", "bitdepth", vsgo.Args{"clip": clip, "bits": 8})
 	superClip, superData := invoke("Super", vsgo.Args{"clip": eightBit, "opt": super})
 	vectorsClip, vectorsData := invoke("Analyse", vsgo.Args{"clip": superClip, "sdata": superData, "src": eightBit, "opt": vectors})
-	return g.clip("svp2", "SmoothFps", vsgo.Args{
+	return g.filter("svp2", "SmoothFps", vsgo.Args{
 		"clip": clip, "super": superClip, "sdata": superData,
 		"vectors": vectorsClip, "vdata": vectorsData, "opt": smooth,
 	})
