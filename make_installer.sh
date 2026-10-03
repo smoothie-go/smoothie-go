@@ -19,7 +19,6 @@ mkdir -p "$DL_DIR" "$LAYOUT_DIR"
 
 GOOS=linux GOARCH=amd64 go build -o "$LAYOUT_DIR/smoothie-go-linux-amd64" .
 
-curl -L -o "$DL_DIR/python.tar.gz" "https://github.com/smoothie-go/pyenv-build/releases/download/py3104-ubuntu2204/python-3.10.4.tar.gz"
 curl -L -o "$DL_DIR/vapoursynth.tar.gz" "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vapoursynth-fa1f579a63b4fdef5f436c086875fe9c4879b5d2/vapoursynth-build-linux-x86_64.tar.gz"
 curl -L -o "$DL_DIR/fmtconv.zip" "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin%2Ffmtconv%2Fgit-18a9cecb%2Flinux-glibc-x86_64%2F2024-10-10T14.44.42%2B00.00Z/fmtconv-git-18a9cecb-linux-glibc-x86_64.zip"
 curl -L -o "$DL_DIR/bestsource.zip" "https://github.com/Stefan-Olt/vs-plugin-build/releases/download/vsplugin%2Fcom.vapoursynth.bestsource%2FR8%2Flinux-glibc-x86_64%2F2024-12-12T18.37.59%2B00.00Z/BestSource-R8-linux-glibc-x86_64.zip"
@@ -55,7 +54,6 @@ FFMPEG_JSON=$(curl "${AUTH_HEADER[@]}" -sSfL "https://api.github.com/repos/BtbN/
 FFMPEG_URL=$(echo "$FFMPEG_JSON" | grep -o 'https://github.com/BtbN/FFmpeg-Builds/releases/download/[^"]*-linux64-gpl\.tar\.xz' | head -n 1)
 curl -L -o "$DL_DIR/ffmpeg.tar.xz" "$FFMPEG_URL"
 
-mkdir -p "$TMP_DIR/python" && tar -xzf "$DL_DIR/python.tar.gz" -C "$TMP_DIR/python"
 mkdir -p "$TMP_DIR/vapoursynth" && tar -xzf "$DL_DIR/vapoursynth.tar.gz" -C "$TMP_DIR/vapoursynth"
 mkdir -p "$TMP_DIR/fmtconv" && unzip -o "$DL_DIR/fmtconv.zip" -d "$TMP_DIR/fmtconv"
 mkdir -p "$TMP_DIR/bestsource" && unzip -o "$DL_DIR/bestsource.zip" -d "$TMP_DIR/bestsource"
@@ -63,10 +61,7 @@ mkdir -p "$TMP_DIR/ffmpeg" && tar -xJf "$DL_DIR/ffmpeg.tar.xz" -C "$TMP_DIR/ffmp
 
 mkdir -p "$LAYOUT_DIR/lib/vapoursynth"
 
-cp -r "$TMP_DIR/python/3.10.4/bin/"* "$LAYOUT_DIR/"
-cp -r "$TMP_DIR/python/3.10.4/lib/"* "$LAYOUT_DIR/lib/"
 cp -r "$TMP_DIR/vapoursynth/workspace/lib/"* "$LAYOUT_DIR/lib/"
-cp "$TMP_DIR/vapoursynth/workspace/bin/vspipe" "$LAYOUT_DIR/"
 
 cp "$TMP_DIR"/ffmpeg/*/bin/ffmpeg "$LAYOUT_DIR/"
 cp "$TMP_DIR"/ffmpeg/*/bin/ffplay "$LAYOUT_DIR/"
@@ -96,7 +91,7 @@ echo "Creating launcher in /usr/bin/smoothie-go (requires sudo)..."
 sudo tee /usr/bin/smoothie-go > /dev/null << INNER_EOF
 #!/bin/bash
 DIR="$INSTALL_DIR"
-exec env LD_LIBRARY_PATH="\$DIR/lib" PATH="\$DIR:\$PATH" PYTHONPATH="\$DIR/lib/python3.10/site-packages" PYTHONHOME="\$DIR" VAPOURSYNTH_CONF_PATH="\$DIR/vapoursynth.conf" "\$DIR/smoothie-go-linux-amd64" "\$@"
+exec env LD_LIBRARY_PATH="\$DIR/lib" PATH="\$DIR:\$PATH" VAPOURSYNTH_CONF_PATH="\$DIR/vapoursynth.conf" "\$DIR/smoothie-go-linux-amd64" "\$@"
 INNER_EOF
 sudo chmod +x /usr/bin/smoothie-go
 echo "smoothie-go has been successfully installed to $INSTALL_DIR"
