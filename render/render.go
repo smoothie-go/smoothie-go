@@ -6,19 +6,15 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"sync"
 
 	"github.com/smoothie-go/smoothie-go/cli"
 	"github.com/smoothie-go/smoothie-go/cmd"
+	"github.com/smoothie-go/smoothie-go/graph"
 	"github.com/smoothie-go/smoothie-go/portable"
 	"github.com/smoothie-go/smoothie-go/recipe"
 	"github.com/smoothie-go/smoothie-go/temp"
+	"github.com/smoothie-go/smoothie-go/vsgo"
 )
-
-type procResult struct {
-	cmd *exec.Cmd
-	err error
-}
 
 func hasAudioStream(input string) bool {
 	ffprobe := portable.GetBinaryInPathOrBinPath("ffprobe")
@@ -64,38 +60,31 @@ func prepareAudio(args *cli.Arguments, rc *recipe.Recipe) (bool, error) {
 	return true, nil
 }
 
-// setupPipelinePipes connects stdout of vspipe to stdin of ffmpeg, optionally copying to ffplay via a MultiWriter.
-func setupPipelinePipes(rc *recipe.Recipe, vspipeCmd, ffmpegCmd, ffplayCmd *exec.Cmd) error {
-	vspipeOut, err := vspipeCmd.StdoutPipe()
-	if err != nil {
-		return err
+// a closed preview window must not stop the render
+type preview struct{ w io.Writer }
+
+func (p *preview) Write(b []byte) (int, error) {
+	if p.w != nil {
+		if _, err := p.w.Write(b); err != nil {
+			p.w = nil
+		}
 	}
-
-	if rc.PreviewWindow.Enabled && ffplayCmd != nil {
-		pipeReader1, pipeWriter1 := io.Pipe()
-		ffmpegCmd.Stdin = pipeReader1
-
-		pipeReader2, pipeWriter2 := io.Pipe()
-		ffplayCmd.Stdin = pipeReader2
-
-		go func() {
-			defer pipeWriter1.Close()
-			defer pipeWriter2.Close()
-			multiWriter := io.MultiWriter(pipeWriter1, pipeWriter2)
-			buf := make([]byte, 1024*1024)
-			if _, err := io.CopyBuffer(multiWriter, vspipeOut, buf); err != nil {
-				log.Printf("Error while copying vspipe output: %v", err)
-			}
-		}()
-	} else {
-		ffmpegCmd.Stdin = vspipeOut
-	}
-
-	return nil
+	return len(b), nil
 }
 
 // Render executes the frame rendering pipeline.
 func Render(args *cli.Arguments, rc *recipe.Recipe) {
+	core, err := vsgo.NewCore()
+	if err != nil {
+		log.Fatal(err)
+	}
+	core.OnLog(func(level int, msg string) {
+		if level >= vsgo.LogWarning || args.Verbose {
+			log.Println(msg)
+		}
+	})
+	clip := graph.Build(core, args, rc)
+
 	if err := temp.InitTemp(args); err != nil {
 		log.Panicln(err.Error())
 	}
@@ -105,57 +94,39 @@ func Render(args *cli.Arguments, rc *recipe.Recipe) {
 		log.Panicf("Prepare audio failed: %v", err)
 	}
 
-	vspipe, ffmpeg, ffplay := cmd.VspipeCommandBuilder(args, rc, hasAudioTracks)
+	ffmpeg, ffplay := cmd.EncodeCommandBuilder(args, rc, hasAudioTracks)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	vspipeCmd := exec.CommandContext(ctx, vspipe[0], vspipe[1:]...)
-	ffmpegCmd := exec.CommandContext(ctx, ffmpeg[0], ffmpeg[1:]...)
-	vspipeCmd.Stderr = os.Stderr
-	ffmpegCmd.Stderr = os.Stderr
-
-	var ffplayCmd *exec.Cmd
-	if rc.PreviewWindow.Enabled {
-		ffplayCmd = exec.CommandContext(ctx, ffplay[0], ffplay[1:]...)
-		ffplayCmd.Stderr = os.Stderr
-	}
-
-	if err := setupPipelinePipes(rc, vspipeCmd, ffmpegCmd, ffplayCmd); err != nil {
-		log.Panicf("Failed to setup pipeline pipes: %v", err)
-	}
-
-	commands := []*exec.Cmd{vspipeCmd, ffmpegCmd}
-	if rc.PreviewWindow.Enabled {
-		commands = append(commands, ffplayCmd)
-	}
-
-	for _, c := range commands {
+	var finish []func()
+	start := func(command []string) io.Writer {
+		c := exec.CommandContext(ctx, command[0], command[1:]...)
+		c.Stderr = os.Stderr
+		stdin, err := c.StdinPipe()
+		if err != nil {
+			log.Panicf("Failed to setup pipeline pipes: %v", err)
+		}
 		if err := c.Start(); err != nil {
 			log.Panicf("Failed to start %s: %v", c.Path, err)
 		}
+		finish = append(finish, func() {
+			stdin.Close()
+			c.Wait()
+		})
+		return stdin
 	}
 
-	resCh := make(chan procResult, len(commands))
-	var wg sync.WaitGroup
-	wg.Add(len(commands))
-
-	for _, c := range commands {
-		go func(cmd *exec.Cmd) {
-			defer wg.Done()
-			err := cmd.Wait()
-			resCh <- procResult{cmd: cmd, err: err}
-		}(c)
+	out := start(ffmpeg)
+	if rc.PreviewWindow.Enabled {
+		out = io.MultiWriter(out, &preview{start(ffplay)})
 	}
 
-	// Wait for any command to finish. If the main encoder (ffmpegCmd) exits,
-	// or if any command exits with an error, cancel the context to clean up the rest.
-	for i := 0; i < len(commands); i++ {
-		res := <-resCh
-		if res.cmd == ffmpegCmd || res.err != nil {
-			cancel()
-		}
+	if err := clip.WriteY4M(ctx, out, core.Threads()); err != nil {
+		log.Printf("Render failed: %v", err)
+		cancel()
 	}
-
-	wg.Wait()
+	for _, f := range finish {
+		f()
+	}
 }

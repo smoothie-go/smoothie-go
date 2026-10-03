@@ -3,7 +3,6 @@ package cli
 import (
 	"log"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/smoothie-go/smoothie-go/portable"
@@ -33,11 +32,6 @@ func SetupArgs() *Arguments {
 			os.Exit(0)
 		case "dir", "root", "folder":
 			log.Printf("Root directory: %s", portable.GetExecutableDirectory())
-			os.Exit(0)
-		case "reloadscripts":
-			log.Println("Reloading scripts...")
-			os.RemoveAll(filepath.Dir(portable.GetMainVpyPath())) // scripts
-			portable.GetMainVpyPath()
 			os.Exit(0)
 		}
 	}
