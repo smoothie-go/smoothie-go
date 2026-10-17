@@ -293,41 +293,6 @@ func GetDefaultTtaModelPath() string {
 	return filepath.Join(GetModelsPath(), "rife-v3.1/")
 }
 
-func DropScriptsAtPath(path string) error {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		os.MkdirAll(path, 0755)
-	}
-	err := writeEmbeddedFiles(scripts, path, "assets/scripts")
-	return err
-}
-
-func GetMainVpyPath() string {
-	var path string
-	path = filepath.Join(GetExecutableDirectory(), "scripts", "main.vpy")
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		err := DropScriptsAtPath(filepath.Dir(path))
-		if err != nil {
-			log.Fatal("Unable to drop vapoursynth scripts at " + filepath.Dir(path))
-		}
-	}
-
-	return path
-}
-
-func GetLogPath() string {
-	if runtime.GOOS == "windows" {
-		return filepath.Join(GetConfigDirectory(), "smoothie-go.log")
-	}
-	logPath := filepath.Join(GetUserHome(), ".local", "state", "smoothie-go.log")
-	if _, err := os.Stat(logPath); os.IsNotExist(err) {
-		err := os.MkdirAll(filepath.Dir(logPath), 0755)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-	return logPath
-}
-
 func GetTempPath(inputFile string) string {
 	base := strings.TrimSuffix(inputFile, filepath.Ext(inputFile))
 	return filepath.Join(os.TempDir(), fmt.Sprintf("%s-%d", base, rand.Uint64()))

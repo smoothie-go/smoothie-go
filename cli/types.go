@@ -8,7 +8,6 @@ type Arguments struct {
 	// overrides; later
 	EncodeArgs string    `json:"encode_args"`
 	RecipePath string    `json:"recipe_path"`
-	LogFile    string    `json:"log_file"`
 	Verbose    bool      `json:"verbose"`
 	Weighting  []float64 `json:"weighting"`
 	CEP        bool      `json:"cep"`

@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"math"
@@ -33,13 +32,7 @@ func ExtractAudioCommandBuilder(args *cli.Arguments, rc *recipe.Recipe, outfile 
 	return extAudioCmd
 }
 
-func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe, hasAudioTracks bool) ([]string, []string, []string) {
-	//look for Vspipe
-	vspipe := portable.GetBinaryInPathOrBinPath("vspipe")
-	if vspipe == "" {
-		log.Panicln("Vspipe not found")
-	}
-
+func EncodeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe, hasAudioTracks bool) ([]string, []string) {
 	ffmpeg := portable.GetBinaryInPathOrBinPath("ffmpeg")
 	if ffmpeg == "" {
 		log.Panicln("FFmpeg not found")
@@ -50,19 +43,8 @@ func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe, hasAudioTracks
 		log.Panicln("FFplay not found")
 	}
 
-	argsjson, _ := json.Marshal(args)
-	rcjson, _ := json.Marshal(rc)
-
 	if args.Verbose {
 		printVerboseConfig(args, rc)
-	}
-
-	vspipeCmd := []string{
-		vspipe,
-		"--container", "y4m", "-",
-		portable.GetMainVpyPath(),
-		"--arg", "rec=" + string(rcjson),
-		"--arg", "args=" + string(argsjson),
 	}
 
 	encArgs := strings.Split(rc.Output.EncArgs, " ")
@@ -123,7 +105,6 @@ func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe, hasAudioTracks
 		white := color.New(color.FgWhite).SprintFunc()
 
 		fmt.Printf("%s %s %s\n", dim("┌───"), cyanBold("Command Execution Pipeline"), dim(" ──────────────────────────────────────"))
-		fmt.Printf("%s %s %s %s\n", dim("│"), greenBold("Vspipe:"), cyan(vspipeCmd[0]), white(strings.Join(vspipeCmd[1:], " ")))
 		fmt.Printf("%s %s %s %s\n", dim("│"), greenBold("FFmpeg:"), cyan(ffmpegCmd[0]), white(strings.Join(ffmpegCmd[1:], " ")))
 		if rc.PreviewWindow.Enabled {
 			fmt.Printf("%s %s %s %s\n", dim("│"), greenBold("FFplay:"), cyan(ffplayCmd[0]), white(strings.Join(ffplayCmd[1:], " ")))
@@ -131,7 +112,7 @@ func VspipeCommandBuilder(args *cli.Arguments, rc *recipe.Recipe, hasAudioTracks
 		fmt.Printf("%s\n", dim("└─────────────────────────────────────────────────────────────────────"))
 	}
 
-	return vspipeCmd, ffmpegCmd, ffplayCmd
+	return ffmpegCmd, ffplayCmd
 }
 
 func printVerboseConfig(args *cli.Arguments, rc *recipe.Recipe) {

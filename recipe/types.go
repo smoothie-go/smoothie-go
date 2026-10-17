@@ -68,10 +68,10 @@ type Recipe struct {
 
 	ColourGrading struct {
 		Enabled    bool    `ini:"enabled" json:"enabled"`
-		Brightness float32 `ini:"brightness" json:"brightness"`
-		Saturation float32 `ini:"saturation" json:"saturation"`
-		Contrast   float32 `ini:"contrast" json:"contrast"`
-		Hue        float32 `ini:"hue" json:"hue"`
+		Brightness float64 `ini:"brightness" json:"brightness"`
+		Saturation float64 `ini:"saturation" json:"saturation"`
+		Contrast   float64 `ini:"contrast" json:"contrast"`
+		Hue        float64 `ini:"hue" json:"hue"`
 		Coring     float32 `ini:"coring" json:"coring"`
 	} `ini:"color grading" json:"color_grading"`
 

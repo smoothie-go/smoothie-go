@@ -133,6 +133,7 @@ jobs:
         shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CGO_ENABLED: 1
         run: |
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             go build -o smoothie-go.exe .

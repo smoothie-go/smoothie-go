@@ -53,9 +53,5 @@ func ValidateArgs(args *Arguments) *Arguments {
 		}
 	}
 
-	if args.LogFile == "" {
-		args.LogFile = portable.GetLogPath()
-	}
-
 	return args
 }
